@@ -1,0 +1,60 @@
+.colorCard {
+	width: 7%;
+	position: absolute;
+	right: 168px;
+	top: 450px;
+}
+
+.double {
+	height: 237px;
+	right: 155px;
+	width: 190px;
+}
+
+.cardPlayer {
+	width: 180px;
+	height: 233px;
+	background-color: navy;
+	position: absolute;
+	right: 0px;
+	top: 450px;
+	border: 2px solid grey;
+	border-top-left-radius: 20px;
+	border-bottom-left-radius: 20px;
+}
+
+.numberBox {
+	width: 90px;
+	height: 65px;
+	background-color: white;
+	position: absolute;
+	right: 40px;
+	top: 60px;
+	border: 2px solid black;
+	border-radius: 20px;
+}
+
+.playerNumber {
+	font-size: 50px;
+	line-height: 50px;
+	color: black;
+	position: absolute;
+	left: 50%;
+    transform: translateX(-50%);
+	top: 7px;
+	font-weight: bold;
+}
+
+.playerName {
+	font-size: 40px;
+	line-height: 40px;
+	color: white;
+	position: absolute;
+	left: 50%;
+    transform: translateX(-50%);
+	top: 140px;
+	font-weight: bold;
+	font-family: 'arial black';
+}
+
+.hidden {right: -200px !important;}

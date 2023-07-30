@@ -1,0 +1,80 @@
+.teams
+{
+    position: absolute;
+    top: 0;
+    width: 600px;
+    height: 120px;
+    line-height: 120px;
+    text-align: center;
+	font-size: 80px;
+	font-family: Sans-Serif;
+	background-color: #252C75;
+	color: white;
+
+    clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%);
+}
+.teams.t1 { left: 400px; }
+.teams.t2 { right: 400px; }
+
+.scores
+{
+    position: absolute;
+    top: 0;
+    width: 150px;
+    height: 100px;
+    line-height: 100px;
+    text-align: center;
+	font-size: 75px;
+	font-family: Sans-Serif;
+	color: white;
+	background-color: #A40033;
+
+    clip-path: polygon(0% 0%, 100% 0%, 70% 100%, 30% 100%);
+}
+.scores.s1 { 
+	left: 300px; 
+	clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 30% 100%);
+}
+.scores.s2 { 
+	right: 300px; 
+	clip-path: polygon(0% 0%, 100% 0%, 70% 100%, 0% 100%);
+}
+
+.gameName 
+{
+	position: absolute;
+    top: 0;
+    width: 800px;
+    height: 90px;
+    line-height: 90px;
+    text-align: center;
+	font-size: 45px;
+	font-family: Sans-Serif;
+	text-shadow: none;
+	background-color: #fff;
+    clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%);
+	left: 885;
+}
+
+.goals 
+{
+	position: absolute;
+    top: 120px;
+    width: 400px;
+    height: 90px;
+    line-height: 90px;
+    text-align: center;
+	font-size: 70px;
+	font-family: Sans-Serif;
+	border-left: 2px solid white;
+	border-right: 2px solid white;
+	border-bottom: 2px solid white;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	text-shadow: none;
+	background-color: #fff;
+}
+.goals.g1 { left: 500px; }
+.goals.g2 { right: 500px; }
+
+.hidden { top: -200 !important}
