@@ -78,3 +78,7 @@
 .goals.g2 { right: 500px; }
 
 .hidden { top: -200 !important}
+
+.hiddenLeft { left: 400 !important }
+
+.hiddenRight { right: 400 !important }

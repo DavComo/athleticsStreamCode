@@ -101,6 +101,9 @@ function initData() {
     onValue(child(dbRef, `football`), (snapshot) => {
         docData = snapshot.val();
         localStorage.setItem("docData", JSON.stringify(docData));
+        if (document.getElementById("valueMs").value == "Loading...") {
+            document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 0 ms"
+        }
         initStopwatch()
     });
 }

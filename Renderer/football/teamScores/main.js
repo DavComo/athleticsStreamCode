@@ -70,7 +70,7 @@ function updateData() {
                 .queue(elemUpdate()).delay(1000)
                 .queue(elemShow('.gameName')).delay(1000)
                 .queue(elemShow('.teams')).delay(1000)
-                .queue(elemShow('.scores'));
+                .queue(elemShow('.scores'))
         } else if ($('.gameName').text() != docData['gameName_1']) {
             $('body')
                 .queue(elemHide('.gameName')).delay(1000)
@@ -92,11 +92,19 @@ function updateData() {
                     .queue(elemShow('.goals.g2')).delay(4000)
                     .queue(elemHide('.goals.g2'))
             }
-    
-            $('body')
-                .queue(elemHide('.scores')).delay(1000)
-                .queue(elemUpdate()).delay(1000)
-                .queue(elemShow('.scores'));
+            if ($('#team_1s').text() != docData['team_1s']) {
+                $('body')
+                    .queue(scoreHideLeft('.s1')).delay(1000)
+                    .queue(elemUpdate()).delay(1000)
+                    .queue(scoreShowLeft('.s1'))
+            }
+            if ($('#team_2s').text() != docData['team_2s']) {
+                $('body')
+                    .queue(scoreHideRight('.s2')).delay(1000)
+                    .queue(elemUpdate()).delay(1000)
+                    .queue(scoreShowRight('.s2'))
+            }
+
         }
     } else {
         $('body')
@@ -112,7 +120,7 @@ function updateData() {
         $('body')
             .queue(elemShow('.gameName')).delay(1000)
             .queue(elemShow('.teams')).delay(1000)
-            .queue(elemShow('.scores'));
+            .queue(elemShow('.scores'))
     }
 }
 
@@ -137,9 +145,37 @@ function elemHide(elem) {
 	}
 }
 
+function scoreHideLeft(elem) {
+	return function (next) {
+		$(elem).addClass('fast hiddenLeft');	
+		next();
+	}
+}
+
+function scoreHideRight(elem) {
+	return function (next) {
+		$(elem).addClass('fast hiddenRight');	
+		next();
+	}
+}
+
 function elemShow(elem) {
 	return function (next) {
 		$(elem).removeClass('fast hidden');	
+		next();
+	}
+}
+
+function scoreShowLeft(elem) {
+	return function (next) {
+		$(elem).removeClass('fast hiddenLeft');	
+		next();
+	}
+}
+
+function scoreShowRight(elem) {
+	return function (next) {
+		$(elem).removeClass('fast hiddenRight');	
 		next();
 	}
 }
