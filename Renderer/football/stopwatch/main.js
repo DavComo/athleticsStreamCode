@@ -53,6 +53,8 @@ async function updateData() {
     if (docData['gameScreen']['stopwatch']['running'] == true ) {
         while (docData['gameScreen']['stopwatch']['running'] == true) {
             var ms = Date.now() - docData['gameScreen']['stopwatch']['startedAt'];
+            var now = Date.now()
+            var startedAt = docData['gameScreen']['stopwatch']['startedAt']
             let seconds = String(Math.floor(ms / 1000) % 60).padStart(2, '0');
             let minutes = String(Math.floor(ms / 1000 / 60)).padStart(2, '0');
             document.getElementById("gameTime").innerText = minutes + " : " + seconds

@@ -65,10 +65,10 @@ function updateData() {
         $('body')
             .queue(elemUpdate())
             .queue(elemShow('#cardPlayer_1'))
-        if (docData['cardType_1'] == 'Yellow Card') {
+        if (docData['cardType_1'] == 'yello') {
             $('body')
                 .queue(elemShow('#yellowCard_1'))
-        } else if (docData['cardType_1'] == 'Red Card'){
+        } else if (docData['cardType_1'] == 'red'){
             $('body')
                 .queue(elemShow('#redCard_1'))
         } else {
@@ -76,10 +76,10 @@ function updateData() {
                 .queue(elemShow('#doubleCards_1'))
         }
         await sleep(docData['showLength_1'])
-        if (docData['cardType_1'] == 'Yellow Card') {
+        if (docData['cardType_1'] == 'yello') {
             $('body')
                 .queue(elemHide('#yellowCard_1'))
-        } else if (docData['cardType_1'] == 'Red Card'){
+        } else if (docData['cardType_1'] == 'red'){
             $('body')
                 .queue(elemHide('#redCard_1'))
         } else {

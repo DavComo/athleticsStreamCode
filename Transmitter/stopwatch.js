@@ -31,7 +31,7 @@ function initStopwatch() {
                 "valueMs" : timeStringToMs(document.getElementById("valueMs").value)
             });
         } else if (stopwatchStarted == false) {
-            startOfStopwatch = new Date();
+            startOfStopwatch = Date.now();
             if (document.getElementById("valueMs").value != NaN) {
                 addedTime = timeStringToMs(document.getElementById("valueMs").value);
             } else {
