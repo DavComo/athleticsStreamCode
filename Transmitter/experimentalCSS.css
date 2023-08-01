@@ -19798,7 +19798,6 @@ a.button.button--splitTrigger>.button-menu:active {
 a.button.button--primary {
     color: #fff;
     background: #272727;
-    min-width: 80px;
     border-color: #343434 #1a1a1a #1a1a1a #343434
 }
 
@@ -24096,7 +24095,7 @@ select.input[multiple],
 }
 
 .tabs--standalone .tabs-tab.is-active {
-    color: #2382c8;
+    color: #1E6FB3;
     border-color: #000
 }
 

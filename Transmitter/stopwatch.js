@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
 import { getDatabase, ref, onValue, child, get, set } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
 
 
-
 var docData;
 var stopwatchStarted;
 var startOfStopwatch
@@ -67,7 +66,7 @@ async function updateStopwatch() {
         let seconds = Math.floor(ms / 1000);
         let minutes = Math.floor(seconds / 60);
         let hours = Math.floor(minutes / 60);
-        document.getElementById("valueMs").value = hours + " h : " + minutes + " m : " + seconds%60 + " s : " + ms%1000 + " ms"
+        document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + ms%1000 + " ms"
         await sleep(1);
     }
     if (stopwatchStarted == false) {

@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-import { getDatabase, ref, onValue, child, get, set } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
+import { getDatabase, ref, onValue, child, get, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
 
 var script = document.createElement('script');
 script.src = 'https://code.jquery.com/jquery-3.6.3.min.js'; // Check https://jquery.com/ for the current version
@@ -31,13 +31,19 @@ function init() {
     // Initialize Cloud Firestore and get a reference to the service
     const dbRef = ref(getDatabase(app));
 
+    var db = getDatabase();
+    set(ref(db, 'football/clients/announcement'), true);
+
     //const querySnapshot = await getDocs(collection(db, "footballData"));
-    //
     onValue(child(dbRef, `football`), (snapshot) => {
+        const clientRef = ref(db, "football/clients/announcement");
+        onDisconnect(clientRef).set(false);
+        set(ref(db, 'football/clients/announcement'), true);
         docData = snapshot.val();
         localStorage.setItem("docData", JSON.stringify(docData));
         updateData()
     });
+
 };
 
 
@@ -163,7 +169,6 @@ function updateData() {
         showAnnouncement()
     }
 }
-
 
 
 //Package JS

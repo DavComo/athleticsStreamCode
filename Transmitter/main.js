@@ -5,12 +5,16 @@ var docData = null;
 var schools = ["mis", "fis", "ais", "zis"];
 
 (function(window, document, undefined) {
-  
+
     window.onload = init();
 
 })(window, document, undefined);
 
 async function init() {  
+    var inputs = document.getElementsByTagName("input")
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].value = "Loading..."
+    };
 
     initButtons();
     initData();
@@ -41,6 +45,28 @@ function initButtons() {
     }
     initNavBar();
 
+    //Init Reset Value Button
+    document.getElementById("resetValues").onclick = function() {
+        updateData();
+
+        var ms = docData['gameScreen']['stopwatch']['valueMs'];
+        let seconds = Math.floor(ms / 1000);
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+
+        document.getElementById("valueMs").value = hours + " h : " + minutes + " m : " + seconds%60 + " s : " + ms%1000 + " ms"
+    };
+
+    //Connections View
+    document.getElementById("viewConnections").onclick = function() {
+        document.getElementById("connectionInfo").classList.remove("hidden");
+        document.getElementById("blurrableElement").classList.add("blur");
+    }
+
+    document.getElementById("closeConnections").onclick = function() {
+        document.getElementById("connectionInfo").classList.add("hidden");
+        document.getElementById("blurrableElement").classList.remove("blur");
+    }
 
 
     //Upload Data for all inputs
@@ -125,6 +151,8 @@ function initButtons() {
         set(ref(db, 'football/gameScreen/showStopwatch'), { 
             'showStopwatch' : document.getElementById("showStopwatch").checked, 
         });
+        set(ref(db, 'football/gameScreen/stopwatch/valueMs'), timeStringToMs(document.getElementById("valueMs").value));
+
     }
 }
 
@@ -155,7 +183,71 @@ function initData() {
     });
 }
 
+var db = getDatabase();
+var isConnected;
+onValue(ref(db, ".info/connected"), (snap) => {
+    if (snap.val() == true) {
+        isConnected = true
+        flipConnectionsServerError()
+    } else if (snap.val() == false) {
+        isConnected = false
+        flipConnectionsServerError()
+    }
+});
+
+
+function flipConnectionsServerError() {
+    var connectionBlocks = document.getElementsByClassName("connectionBlock")
+    if (isConnected == false) {
+        var serverBlock = document.getElementById("serverBlock")
+        serverBlock.style.color = "red"
+        serverBlock.children[2].innerText = "Not Connected"
+        serverBlock.children[0].style.backgroundColor = "red"
+        document.getElementById("serverStatus").style.color = "red";
+        document.getElementById("serverStatus").innerText = "Server Disconnected";
+        document.getElementsByClassName('formSubmitRow-main')[0].style.display = "none";
+    } else {
+        var serverBlock = document.getElementById("serverBlock")
+        serverBlock.style.color = "green"
+        serverBlock.children[2].innerText = "Connected"
+        serverBlock.children[0].style.backgroundColor = "green"
+        document.getElementById("serverStatus").style.color = "green";
+        document.getElementById("serverStatus").innerText = "Server Online";
+        document.getElementsByClassName('formSubmitRow-main')[0].style.display = "block";
+    }
+    for (var i = 0; i < connectionBlocks.length; i++) {
+        if (isConnected == false) {
+            connectionBlocks[i].style.color = "red"
+            connectionBlocks[i].children[2].innerText = "No Server Connection"
+            connectionBlocks[i].children[0].style.backgroundColor = "red"
+        }
+    }
+}
+
 function updateData() {
+    //Connection Info
+    var serverBlock = document.getElementById("serverBlock")
+    serverBlock.style.color = "green"
+    serverBlock.children[2].innerText = "Connected"
+    serverBlock.children[0].style.backgroundColor = "green"
+    document.getElementById("serverStatus").style.color = "green";
+    document.getElementById("serverStatus").innerText = "Server Online";
+    document.getElementsByClassName('formSubmitRow-main')[0].style.display = "block";
+
+    var connectionBlocks = document.getElementsByClassName("connectionBlock")
+    for (var i = 0; i < connectionBlocks.length; i++) {
+        if (docData['clients'][connectionBlocks[i].id.slice(0, -6)] == true) {
+            connectionBlocks[i].style.color = "green"
+            connectionBlocks[i].children[2].innerText = "Connected"
+            connectionBlocks[i].children[0].style.backgroundColor = "green"
+        } else {
+            connectionBlocks[i].style.color = "red"
+            connectionBlocks[i].children[2].innerText = "Not Connected"
+            connectionBlocks[i].children[0].style.backgroundColor = "red"
+        }
+    }
+
+
     //Color Page
     for (var i = 0; i < schools.length; i++) {
         document.getElementById(schools[i] + "Primary").value = docData["colors"][schools[i]]["primary"];
@@ -227,4 +319,19 @@ function schoolColorToWebColor(schoolColor) {
     } else {
         return schoolColor;
     }
+}
+
+function timeStringToMs(timeString) {
+    var [hours, minutes, seconds, milliseconds] = timeString.split(" : ")
+    hours = parseInt(hours.slice(0, -2));
+    minutes = parseInt(minutes.slice(0, -2));
+    seconds = parseInt(seconds.slice(0, -2));
+    milliseconds = parseInt(milliseconds.slice(0, -2));
+  
+    const msInHour = hours * 60 * 60 * 1000;
+    const msInMinute = minutes * 60 * 1000;
+    const msInSecond = seconds * 1000;
+  
+    const totalMs = msInHour + msInMinute + msInSecond + milliseconds;
+    return totalMs;
 }
