@@ -46,9 +46,10 @@ function init() {
 
 };
 
-
+var running = false;
 //Update Data (Source js + refactoring)
 function updateData() {
+
     docData = {
         "announcementType_1" : docData["miscPopup"]["announcementType"],
         "awardedTeam_1" : docData["miscPopup"]["awardedTeam"],
@@ -163,10 +164,12 @@ function updateData() {
         );
     }
     
-    if (docData['show_1'] == '1') {
+    if (docData['show_1'] == '1' && running == false) {
         $('body')
             .queue(elemUpdate())
+        running = true;
         showAnnouncement()
+        running = false;
     }
 }
 

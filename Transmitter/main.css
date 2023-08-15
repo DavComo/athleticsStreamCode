@@ -74,3 +74,9 @@
 .noHover {
     pointer-events: none;
 }
+
+.color-picker {
+    background-color: black;
+    width: 10%;
+    display: inline-flex;
+}

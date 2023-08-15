@@ -70,7 +70,9 @@ function initButtons() {
 
 
     //Upload Data for all inputs
-    document.getElementById("saveValues").onclick = function() {
+    document.getElementById("saveValues").onclick = async function() {
+        document.getElementById("saveValues").innerText = "Save Successful"
+        document.getElementById("saveValues").style.backgroundColor = "green"
         var choiceIds = ["eventScene"];
         var toggleIds = ["showEvent"];
 
@@ -152,7 +154,18 @@ function initButtons() {
             'showStopwatch' : document.getElementById("showStopwatch").checked, 
         });
         set(ref(db, 'football/gameScreen/stopwatch/valueMs'), timeStringToMs(document.getElementById("valueMs").value));
+    
+        /*catch (e) {
+            if (e instanceof PERMISSION_DENIED) {
+                alert("You do not have permission to write to this data. Please check permissions.")
+            } else {
+                alert("An unknown error has occured in database write. Please contact the administrator.")
+            }
+        }*/
+        await new Promise(r => setTimeout(r, 500));
 
+        document.getElementById("saveValues").innerText = "Save Values"
+        document.getElementById("saveValues").style.removeProperty("background-color")
     }
 }
 
@@ -164,7 +177,6 @@ function initData() {
         storageBucket: "athleticsstream-bfe90.appspot.com",
         messagingSenderId: "260965419764",
         appId: "1:260965419764:web:2ecac5005ae89c09006ca1",
-        databaseURL : "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app/"
     };
 
     // Initialize Firebas
@@ -188,6 +200,7 @@ var isConnected;
 onValue(ref(db, ".info/connected"), (snap) => {
     if (snap.val() == true) {
         isConnected = true
+        if (docData == null) {docData = JSON.parse(localStorage.getItem("docData"))};
         flipConnectionsServerError()
     } else if (snap.val() == false) {
         isConnected = false
@@ -252,6 +265,10 @@ function updateData() {
     for (var i = 0; i < schools.length; i++) {
         document.getElementById(schools[i] + "Primary").value = docData["colors"][schools[i]]["primary"];
         document.getElementById(schools[i] + "Secondary").value = docData["colors"][schools[i]]["secondary"];
+
+        document.getElementById(schools[i] + "PrimaryColor").style.backgroundColor = docData["colors"][schools[i]]["primary"];
+        document.getElementById(schools[i] + "SecondaryColor").style.backgroundColor = docData["colors"][schools[i]]["secondary"];
+
     }
 
     //Event Name
