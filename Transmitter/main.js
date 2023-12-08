@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
 import { getDatabase, ref, onValue, child, get, set } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
 
 var docData = null;
-var schools = ["mis", "fis", "ais", "zis"];
+var schools = ["mis", "fis", "ais", "zis", "sgsm"];
 
 (function(window, document, undefined) {
 
@@ -133,10 +133,10 @@ function initButtons() {
 
         //Save Card System
         set(ref(db, 'football/cardPopup'), { 
+            'team' : document.getElementById("cardTeam").value,
             'cardType' : document.getElementById("cardType").value, 
             'playerNumber' : document.getElementById("playerNumber").value,
             'playerName' : document.getElementById("playerName").value, 
-            'playerColor' : schoolColorToWebColor(document.getElementById("playerColor").value),
             'showLengthMs' : document.getElementById("showLength-Card").value,
             'showCard' : document.getElementById("showCard").checked
         });
@@ -173,11 +173,13 @@ function initData() {
     const firebaseConfig = {
         apiKey: "AIzaSyBokVHaaTBGEAlExbksVjDTXm-Q3cFSoKw",
         authDomain: "athleticsstream-bfe90.firebaseapp.com",
+        databaseURL: "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "athleticsstream-bfe90",
         storageBucket: "athleticsstream-bfe90.appspot.com",
         messagingSenderId: "260965419764",
         appId: "1:260965419764:web:2ecac5005ae89c09006ca1",
-    };
+        measurementId: "G-20KJ9JRV7H"
+      };
 
     // Initialize Firebas
     const app = initializeApp(firebaseConfig);
@@ -311,13 +313,14 @@ function updateData() {
     //Card System
     document.getElementById(docData["cardPopup"]["cardType"]).selected = true;
 
+    document.getElementById("cardTeam").value = docData["cardPopup"]["team"];
     document.getElementById("playerNumber").value = docData["cardPopup"]["playerNumber"];
     document.getElementById("playerName").value = docData["cardPopup"]["playerName"];
-    document.getElementById("playerColor").value = docData["cardPopup"]["playerColor"];
 
     document.getElementById("showCard").checked = docData["cardPopup"]["showCard"];
 
     document.getElementById("showLength-Card").value = docData["cardPopup"]["showLengthMs"];
+
 
     //Announcement
     document.getElementById(docData["miscPopup"]["announcementType"]).selected = true;

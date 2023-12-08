@@ -2,16 +2,76 @@
     <link rel="stylesheet" href="./main.css">
     <link rel="stylesheet" href="../packageCSS.css">
     <script type="module" src="./main.js"></script>
+    <script type="module" src="./stopwatch.js"></script>
+    <script type="module" src="./cards.js"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Franklin">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Maven+Pro">
 </head>
 <body>
-    <div class="gameName color3 slow" id="gameName_1">LOADING</div>
+    <div class="main-container">
+        <div class="card-container slow fast hidden" id="card-container">
+            <div class="card-inset">
+                <div class="card-icon-container">
+                    <img id='card_icon' class="card-icon" src="./FIS_Logo-200x200.png">
+                </div>
+                <div class="card-num-container" id="player_number_container">
+                    <b id="player_number">10</b>
+                </div>
+                <div class="card-right-container">
+                    <div class="text-plus-cardtype">
+                        <div class="text">
+                            <b id='team_name' class="team-name">MUNICH WILDCATS</b>
+                            <b id='card_type_name' class="card-type-text">Double Yellow Card</b>
+                        </div>
+                        <div class="card-type">
+                            <img id='card_image' src="./DoubleYellow.png">
+                        </div>
+                    </div>
+                    <div class="separator-line"></div>
+                </div>
+            </div>
+        </div>
 
-    <div class="scores s1 color2 slow" id="team_1s">0</div>
-    <div class="scores s2 color2 slow" id="team_2s">0</div>
+        <div class="top-container slow">
+            <div id='top-colored' class="top-colored">
+                <b id="gameName" class=".gameName">Varsity Boys Football</b>
+            </div>
+        </div>
 
-    <div class="goals g1 color3 slow fast hidden" id="goal_t1">Goal!!!</div>
-    <div class="goals g2 color3 slow fast hidden" id="goal_t2">Goal!!!</div>
+        <div class="center-container">
+            <div>
+                <div class="score-container-left" id="score-left">
+                    <div id='score-block-left' class="score-block" style="background-color: #293079; margin-right: 1.5px;">
+                        <b id="team_1s">6</b>
+                    </div>
+                    <div id='team_1' class="school-sign" style="margin-right: 25px; color: #293079;">MIS</div>
+                    <div class="icon-box" style="margin-left: -10px; margin-right: auto; clip-path: polygon(7% 0%, 25% 100%, 97.5% 100%, 100% 0%);">
+                        <img id='team_1_icon' src="./MIS_Logo-200x200.png">
+                    </div>
+                </div>
+                <div class="gradient-left"></div>
+            </div>
 
-    <div class="teams t1 color1 slow" id="team_1">LOADING</div>
-    <div class="teams t2 color1 slow" id="team_2">LOADING</div>
+            <div>
+                <div class="score-container-right" id="score-right">
+                    <div id='score-block-right' class="score-block" style="background-color: #620826; margin-left: 1.5px;">
+                        <b id="team_2s">12</b>
+                    </div>
+                    <div id='team_2' class="school-sign" style="margin-left: 25px; color: #620826;">FIS</div>
+                    <div class="icon-box" style="margin-right: -10px; margin-left: auto; clip-path: polygon(0% 0%, 0% 100%, 75% 100%, 93% 0%);">
+                        <img id='team_2_icon' src="./FIS_Logo-200x200.png">
+                    </div>
+                </div>
+                <div class="gradient-right"></div>
+            </div>
+        </div>
+
+        <div class="bottom-container slow" id="bottom">
+            <div id='bottom-colored' class="bottom-colored">
+                <b id='stopwatch' style="position: absolute; margin-left: -50px;">9:15</b>
+                <b id='halfid' style="font-size: 20px; position: absolute; margin-right: -100px;">1st</b>
+            </div>
+        </div>
+    </div>
 </body>

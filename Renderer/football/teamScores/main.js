@@ -5,6 +5,17 @@ var script = document.createElement('script');
 script.src = 'https://code.jquery.com/jquery-3.6.3.min.js'; // Check https://jquery.com/ for the current version
 document.getElementsByTagName('head')[0].appendChild(script);
 
+var schoolPseudonyms = [
+    ['MIS', 'Munich'],
+    ['FIS', 'Frankfurt'],
+    ['AIS', 'Vienna'],
+    ['ZIS', 'Zurich'],
+    ['BUD', 'Budapest'],
+    ['ISB', 'Brussels'],
+    ['SGSM', 'St Georges']
+];
+
+
 //Initiate Data
 (function(window, document, undefined) {
   
@@ -34,13 +45,17 @@ function init() {
     var db = getDatabase();
 
     set(ref(db, 'football/clients/teamScores'), true);
+    set(ref(db, 'football/clients/stopwatch'), true);
 
     //const querySnapshot = await getDocs(collection(db, "footballData"));
     //
     onValue(child(dbRef, `football`), (snapshot) => {
         const clientRef = ref(db, "football/clients/teamScores");
+        const clientRef2 = ref(db, "football/clients/stopwatch");
+        onDisconnect(clientRef2).set(false);
         onDisconnect(clientRef).set(false);
         set(ref(db, 'football/clients/teamScores'), true);
+        set(ref(db, 'football/clients/stopwatch'), true);
         docDataTemp = snapshot.val();
         localStorage.setItem("docData", JSON.stringify(docDataTemp));
         updateData()
@@ -48,6 +63,7 @@ function init() {
 };
 
 var docData;
+var colors;
 //Update Data (Source js + refactoring)
 function updateData() {
     docData = {
@@ -56,71 +72,74 @@ function updateData() {
         "team_1s" : docDataTemp['gameScreen']['scores']['side_1'],
         "team_2s" : docDataTemp['gameScreen']['scores']['side_2'],
         "gameName_1" : docDataTemp['gameScreen']['insets']['gameName'],
-        "hide_1" : !docDataTemp['gameScreen']['insets']['showGame']
+        "hide_1" : !docDataTemp['gameScreen']['insets']['showGame'],
+        "stopwatchms" : docDataTemp['gameScreen']['stopwatch']['valueMs'],
+        "stopwatchrunning" : docDataTemp['gameScreen']['stopwatch']['running'],
+        "startedAt" : docDataTemp['gameScreen']['stopwatch']['startedAt'],
+        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch']['showStopwatch']
     }
 
+    colors = {
+        'mis_primary' : docDataTemp['colors']['mis']['primary'],
+        'mis_secondary' : docDataTemp['colors']['mis']['secondary'],
+        'ais_primary' : docDataTemp['colors']['ais']['primary'],
+        'ais_secondary' : docDataTemp['colors']['ais']['secondary'],
+        'fis_primary' : docDataTemp['colors']['fis']['primary'],
+        'fis_secondary' : docDataTemp['colors']['fis']['secondary'],
+        'zis_primary' : docDataTemp['colors']['zis']['primary'],
+        'zis_secondary' : docDataTemp['colors']['zis']['secondary'],
+        'sgsm_primary' : docDataTemp['colors']['sgsm']['primary'],
+        'sgsm_secondary' : docDataTemp['colors']['sgsm']['secondary'],
+    }
+
+
     if (docData['hide_1'] == false) {
-        if ($('#team_1').text() != docData['team_1'] ||
-            $('#team_2').text() != docData['team_2'] )
-        {
+        if ($('.main-container').hasClass('hidden')) {
             $('body')
-                .queue(elemHide('.scores')).delay(1000)
-                .queue(elemHide('.teams')).delay(1000)
-                .queue(elemHide('.gameName')).delay(1000)
-                .queue(elemUpdate()).delay(1000)
-                .queue(elemShow('.gameName')).delay(1000)
-                .queue(elemShow('.teams')).delay(1000)
-                .queue(elemShow('.scores'))
-        } else if ($('.gameName').text() != docData['gameName_1']) {
-            $('body')
-                .queue(elemHide('.gameName')).delay(1000)
-                .queue(elemUpdate()).delay(1000)
-                .queue(elemShow('.gameName'));
+                .queue(elemShow('.main-container')).delay(500)
+                .queue(elemShow('.bottom-container')).delay(500)
+                .queue(elemShow('.top-container'))
         }
 
+        if ($('#gameName').text() != docData['gameName_1']) {
+            $('body')
+                .queue(elemHide('.top-container')).delay(1000)
+                .queue(updateSpecific('gameName', 'gameName_1'))
+                .queue(elemShow('.top-container'))
+        }
 
-        if ($('#team_1s').text() != docData['team_1s'] ||
-            $('#team_2s').text() != docData['team_2s'] )
-        {
-            if (parseInt($('#team_1s').text()) < parseInt(docData['team_1s'])) {
-                $('body')
-                    .queue(elemShow('.goals.g1')).delay(4000)
-                    .queue(elemHide('.goals.g1'))
-            }
-            if (parseInt($('#team_2s').text()) < parseInt(docData['team_2s'])) {
-                $('body')
-                    .queue(elemShow('.goals.g2')).delay(4000)
-                    .queue(elemHide('.goals.g2'))
-            }
-            if ($('#team_1s').text() != docData['team_1s']) {
-                $('body')
-                    .queue(scoreHideLeft('.s1')).delay(1000)
-                    .queue(elemUpdate()).delay(1000)
-                    .queue(scoreShowLeft('.s1'))
-            }
-            if ($('#team_2s').text() != docData['team_2s']) {
-                $('body')
-                    .queue(scoreHideRight('.s2')).delay(1000)
-                    .queue(elemUpdate()).delay(1000)
-                    .queue(scoreShowRight('.s2'))
-            }
+        if ($('#team_1').text() != docData['team_1'] || $('#team_2').text() != docData['team_2']) {
+            $('body')
+                .queue(elemHide('.top-container')).delay(500)
+                .queue(elemHide('.bottom-container')).delay(500)
+                .queue(elemHide('.main-container')).delay(1000)
+                .queue(updateSpecific('team_1', 'team_1'))
+                .queue(updateIcon('team_1_icon', docData['team_1']))
+                .queue(updateIcon('team_2_icon', docData['team_2']))
+                .queue(updateColors())
+                .queue(updateSpecific('team_2', 'team_2'))
+                .queue(elemShow('.main-container')).delay(500)
+                .queue(elemShow('.bottom-container')).delay(500)
+                .queue(elemShow('.top-container')).delay(500)
+        }
 
+        if ($('#team_1s').text() != docData['team_1s'] || $('#team_2s').text() != docData['team_2s']) {
+            $('body')
+                .queue(updateSpecific('team_1s', 'team_1s'))
+                .queue(updateSpecific('team_2s', 'team_2s'))
         }
     } else {
         $('body')
-            .queue(elemHide('.scores')).delay(1000)
-            .queue(elemHide('.teams')).delay(1000)
-            .queue(elemHide('.gameName')).delay(1000)
-            .queue(elemUpdate())
-        scoreHidden = 1
-    }
-    
-    if (docData['hide_1'] != true && scoreHidden == 1) {
-        scoreHidden = 0;
-        $('body')
-            .queue(elemShow('.gameName')).delay(1000)
-            .queue(elemShow('.teams')).delay(1000)
-            .queue(elemShow('.scores'))
+            .queue(elemHide('.top-container')).delay(500)
+            .queue(elemHide('.bottom-container')).delay(500)
+            .queue(elemHide('.main-container'))
+            .queue(updateSpecific('team_1', 'team_1'))
+            .queue(updateIcon('team_1_icon', docData['team_1']))
+            .queue(updateIcon('team_2_icon', docData['team_2']))
+            .queue(updateColors())
+            .queue(updateSpecific('team_2', 'team_2'))
+            .queue(updateSpecific('team_1s', 'team_1s'))
+            .queue(updateSpecific('team_2s', 'team_2s'))
     }
 }
 
@@ -160,10 +179,19 @@ function scoreHideRight(elem) {
 }
 
 function elemShow(elem) {
-	return function (next) {
-		$(elem).removeClass('fast hidden');	
-		next();
-	}
+    if (elem != '.bottom-container') {
+        return function (next) {
+            $(elem).removeClass('fast hidden');	
+            next();
+        }
+    } else {
+        if (docData['showStopwatch'] == true) {
+            return function (next) {
+                $(elem).removeClass('fast hidden');	
+                next();
+            }
+        }
+    }
 }
 
 function scoreShowLeft(elem) {
@@ -208,4 +236,69 @@ function componentToHex(c) {
 
 function rgbToHex(r, g, b) {
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function updateSpecific(htmlelem, docelem) {
+	return function(next) {
+		$('#' + htmlelem).text(docData[docelem]);
+		next();
+	}
+}
+
+function updateIcon(htmlelem, schoolName) {
+    return function(next) {
+        for (var i = 0; i < schoolPseudonyms.length; i++) {
+            if (schoolPseudonyms[i].includes(schoolName)) {
+                schoolName = schoolPseudonyms[i][0]
+            }
+        }
+
+        $('#' + htmlelem).attr('src', './' + schoolName + '_Logo-200x200.png');
+        next();
+    }
+}
+
+function updateColors() {
+    return function(next) {
+        var schoolName_left = docData['team_1'];
+        var schoolName_right = docData['team_2'];
+        for (var i = 0; i < schoolPseudonyms.length; i++) {
+            if (schoolPseudonyms[i].includes(schoolName_left)) {
+                schoolName_left = schoolPseudonyms[i][0]
+            } else if (schoolPseudonyms[i].includes(schoolName_right)) {
+                schoolName_right = schoolPseudonyms[i][0]
+            }
+        }
+        //Left side first
+        $('#score-block-left').css('background-color', colors[schoolName_left.toLowerCase() + '_secondary']);
+        $('#team_1').css('color', colors[schoolName_left.toLowerCase() + '_secondary']);
+
+        $('#score-block-right').css('background-color', colors[schoolName_right.toLowerCase() + '_secondary']);
+        $('#team_2').css('color', colors[schoolName_right.toLowerCase() + '_secondary']);
+
+        var gradientCSS = 'linear-gradient(to right, ' + colors[schoolName_right.toLowerCase() + '_primary'] + ' 0%, ' + colors[schoolName_left.toLowerCase() + '_primary'] + ' 100%)'
+        $('#top-colored').css('background', gradientCSS);
+        $('#bottom-colored').css('background', gradientCSS);
+        //'linear-gradient(90deg, ' + colors[schoolName_left.toLowerCase() + '_secondary'] + ' 0%, ' + colors[schoolName_right.toLowerCase() + '_secondary'] + ' 100%);'
+        next();
+    }
+}
+
+/*Deprecated, view stopwatch.js for updated version*/
+async function updateStopwatch() {
+    if (docData['stopwatchrunning'] == false) {
+        var timeinms = docData['stopwatchms'];
+        var minutes = Math.floor(timeinms / 60000);
+        var seconds = ((timeinms % 60000) / 1000).toFixed(0);
+        console.log(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'))
+        $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));
+    } else {
+        while (docData['stopwatchrunning'] == true) {
+            var timeinms = Date.now() - docData['startedAt'];
+            var minutes = Math.floor(timeinms / 60000);
+            var seconds = ((timeinms % 60000) / 1000).toFixed(0);
+            $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));
+            await sleep(10)
+        }
+    }
 }

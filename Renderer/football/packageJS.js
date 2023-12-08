@@ -33,6 +33,13 @@ function elemUpdate() {
 	}
 }
 
+function updateSpecific(htmlelem, docelem) {
+	return function(next) {
+		$('#' + htmlelem).text(docData[docelem]);
+		next();
+	}
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

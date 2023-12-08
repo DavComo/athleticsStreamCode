@@ -20,6 +20,7 @@ function sleep(ms) {
 function initStopwatch() {
     const db = getDatabase();
     stopwatchStarted = docData["gameScreen"]["stopwatch"]["running"];
+    updateStopwatch();
     //Init stopwatch buttons
     document.getElementById("startAndStop").onclick = function() {
         if (stopwatchStarted == true) {
@@ -82,12 +83,13 @@ function initData() {
     const firebaseConfig = {
         apiKey: "AIzaSyBokVHaaTBGEAlExbksVjDTXm-Q3cFSoKw",
         authDomain: "athleticsstream-bfe90.firebaseapp.com",
+        databaseURL: "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "athleticsstream-bfe90",
         storageBucket: "athleticsstream-bfe90.appspot.com",
         messagingSenderId: "260965419764",
         appId: "1:260965419764:web:2ecac5005ae89c09006ca1",
-        databaseURL : "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app/"
-    };
+        measurementId: "G-20KJ9JRV7H"
+      };
 
     // Initialize Firebas
     const app = initializeApp(firebaseConfig);
