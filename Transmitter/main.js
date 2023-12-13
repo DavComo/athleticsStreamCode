@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
 import { getDatabase, ref, onValue, child, get, set } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
 
 var docData = null;
-var schools = ["mis", "fis", "ais", "zis", "sgsm"];
+var schools = ["mis", "fis", "ais", "zis", "sgsm", "bis"];
 
 (function(window, document, undefined) {
 

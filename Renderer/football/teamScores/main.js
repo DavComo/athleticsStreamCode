@@ -12,7 +12,8 @@ var schoolPseudonyms = [
     ['ZIS', 'Zurich'],
     ['BUD', 'Budapest'],
     ['ISB', 'Brussels'],
-    ['SGSM', 'St Georges']
+    ['SGSM', 'St Georges'],
+    ['BIS', 'Bavarian']
 ];
 
 
@@ -90,6 +91,8 @@ function updateData() {
         'zis_secondary' : docDataTemp['colors']['zis']['secondary'],
         'sgsm_primary' : docDataTemp['colors']['sgsm']['primary'],
         'sgsm_secondary' : docDataTemp['colors']['sgsm']['secondary'],
+        'bis_primary' : docDataTemp['colors']['bis']['primary'],
+        'bis_secondary' : docDataTemp['colors']['bis']['secondary']
     }
 
 
