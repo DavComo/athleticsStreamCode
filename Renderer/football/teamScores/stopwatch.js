@@ -90,7 +90,7 @@ function updateData() {
     updateStopwatch();
 }
 
-async function updateStopwatch() {
+async function updateStopwatch(docData) {
     if (docData['stopwatchrunning'] == false) {
         var timeinms = docData['stopwatchms'];
         var minutes = Math.floor(timeinms / 60000);

@@ -16,7 +16,6 @@ var schoolPseudonyms = [
     ['BIS', 'Bavarian']
 ];
 
-
 //Initiate Data
 (function(window, document, undefined) {
   
@@ -24,7 +23,44 @@ var schoolPseudonyms = [
 
 })(window, document, undefined);
 
-var docDataTemp;
+var docDataTempTemp;
+function init() {
+    // Initialize AWS SDK and DynamoDB client
+    AWS.config.update({
+        region: streamData.awsRegion,
+        accessKeyId: streamData.awsAccessKey,
+        secretAccessKey: streamData.awsSecretKey
+    });
+
+    const dynamodb = new AWS.DynamoDB();
+
+    // Function to fetch data from DynamoDB
+    function fetchData() {
+        const params = {
+            TableName: 'stream_' + streamData.streamId,
+            // Add any other parameters as needed
+        };
+
+        dynamodb.scan(params, function(err, data) {
+            if (err) {
+                console.error("Error fetching data from DynamoDB:", err);
+            } else {
+                // Update the UI with the fetched data
+                docDataTempTemp = data.Items;
+                console.log("Updating data")
+                updateData()
+            }
+        });
+    }
+
+    // Fetch data initially
+    fetchData();
+
+    // Set up a periodic refresh (adjust the interval as needed)
+    setInterval(fetchData, 1000); // Refresh every 5 seconds
+};
+
+/*
 function init() {
     const firebaseConfig = {
         apiKey: "AIzaSyBokVHaaTBGEAlExbksVjDTXm-Q3cFSoKw",
@@ -62,39 +98,47 @@ function init() {
         updateData()
     });
 };
+*/
 
-var docData;
+var docData = {};
+var docDataTemp = {};
 var colors;
 //Update Data (Source js + refactoring)
 function updateData() {
+    for (var index = 0; index < docDataTempTemp.length; index++) {
+        var indexkey = docDataTempTemp[index].valueId.S;
+        docDataTemp[indexkey] = docDataTempTemp[index];
+    }
+
     docData = {
-        "team_1" : docDataTemp['gameScreen']['sideNames']['side_1'],
-        "team_2" : docDataTemp['gameScreen']['sideNames']['side_2'],
-        "team_1s" : docDataTemp['gameScreen']['scores']['side_1'],
-        "team_2s" : docDataTemp['gameScreen']['scores']['side_2'],
-        "gameName_1" : docDataTemp['gameScreen']['insets']['gameName'],
-        "hide_1" : !docDataTemp['gameScreen']['insets']['showGame'],
-        "stopwatchms" : docDataTemp['gameScreen']['stopwatch']['valueMs'],
-        "stopwatchrunning" : docDataTemp['gameScreen']['stopwatch']['running'],
-        "startedAt" : docDataTemp['gameScreen']['stopwatch']['startedAt'],
-        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch']['showStopwatch']
+        "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
+        "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,
+        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].N,
+        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].N,
+        "gameName_1" : docDataTemp['gameScreen']['gameName'].S,
+        "hide_1" : !docDataTemp['gameScreen']['showGame'].BOOL,
+        "stopwatchms" : docDataTemp['gameScreen']['stopwatchValueMs'].N,
+        "stopwatchrunning" : docDataTemp['gameScreen']['stopwatchRunning'].BOOL,
+        "startedAt" : docDataTemp['gameScreen']['stopwatchStartedAt'].N,
+        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch'].BOOL
     }
 
     colors = {
-        'mis_primary' : docDataTemp['colors']['mis']['primary'],
-        'mis_secondary' : docDataTemp['colors']['mis']['secondary'],
-        'ais_primary' : docDataTemp['colors']['ais']['primary'],
-        'ais_secondary' : docDataTemp['colors']['ais']['secondary'],
-        'fis_primary' : docDataTemp['colors']['fis']['primary'],
-        'fis_secondary' : docDataTemp['colors']['fis']['secondary'],
-        'zis_primary' : docDataTemp['colors']['zis']['primary'],
-        'zis_secondary' : docDataTemp['colors']['zis']['secondary'],
-        'sgsm_primary' : docDataTemp['colors']['sgsm']['primary'],
-        'sgsm_secondary' : docDataTemp['colors']['sgsm']['secondary'],
-        'bis_primary' : docDataTemp['colors']['bis']['primary'],
-        'bis_secondary' : docDataTemp['colors']['bis']['secondary']
+        'mis_primary' : docDataTemp['primaryColors']['mis'].S,
+        'mis_secondary' : docDataTemp['secondaryColors']['mis'].S,
+        'ais_primary' : docDataTemp['primaryColors']['ais'].S,
+        'ais_secondary' : docDataTemp['secondaryColors']['ais'].S,
+        'fis_primary' : docDataTemp['primaryColors']['fis'].S,
+        'fis_secondary' : docDataTemp['secondaryColors']['fis'].S,
+        'zis_primary' : docDataTemp['primaryColors']['zis'].S,
+        'zis_secondary' : docDataTemp['secondaryColors']['zis'].S,
+        'sgsm_primary' : docDataTemp['primaryColors']['sgsm'].S,
+        'sgsm_secondary' : docDataTemp['secondaryColors']['sgsm'].S,
+        'bis_primary' : docDataTemp['primaryColors']['bis'].S,
+        'bis_secondary' : docDataTemp['secondaryColors']['bis'].S,
     }
 
+    updateStopwatch(docData);
 
     if (docData['hide_1'] == false) {
         if ($('.main-container').hasClass('hidden')) {
