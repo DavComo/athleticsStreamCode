@@ -164,7 +164,7 @@ function updateIcon(htmlelem, schoolName) {
             }
         }
 
-        $('#' + htmlelem).attr('src', '../../../CommonUse/' + schoolName + '_Logo-200x200.png');
+        $('#' + htmlelem).attr('src', './' + schoolName + '_Logo-200x200.png');
         next();
     }
 }
