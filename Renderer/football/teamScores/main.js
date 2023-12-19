@@ -23,7 +23,27 @@ var schoolPseudonyms = [
 
 })(window, document, undefined);
 
+var dynamodb;
 var docDataTempTemp;
+
+function fetchData() {
+    const params = {
+        TableName: 'stream_' + streamData.streamId,
+        // Add any other parameters as needed
+    };
+
+    dynamodb.scan(params, function(err, data) {
+        if (err) {
+            console.error("Error fetching data from DynamoDB:", err);
+        } else {
+            // Update the UI with the fetched data
+            docDataTempTemp = data.Items;
+            console.log("Updating data")
+            updateData()
+        }
+    });
+}
+
 function init() {
     // Initialize AWS SDK and DynamoDB client
     AWS.config.update({
@@ -32,79 +52,22 @@ function init() {
         secretAccessKey: streamData.awsSecretKey
     });
 
-    const dynamodb = new AWS.DynamoDB();
+    dynamodb = new AWS.DynamoDB();
 
-    // Function to fetch data from DynamoDB
-    function fetchData() {
-        const params = {
-            TableName: 'stream_' + streamData.streamId,
-            // Add any other parameters as needed
-        };
-
-        dynamodb.scan(params, function(err, data) {
-            if (err) {
-                console.error("Error fetching data from DynamoDB:", err);
-            } else {
-                // Update the UI with the fetched data
-                docDataTempTemp = data.Items;
-                console.log("Updating data")
-                updateData()
-            }
-        });
-    }
-
-    // Fetch data initially
     fetchData();
-
-    // Set up a periodic refresh (adjust the interval as needed)
-    setInterval(fetchData, 1000); // Refresh every 5 seconds
 };
 
-/*
-function init() {
-    const firebaseConfig = {
-        apiKey: "AIzaSyBokVHaaTBGEAlExbksVjDTXm-Q3cFSoKw",
-        authDomain: "athleticsstream-bfe90.firebaseapp.com",
-        projectId: "athleticsstream-bfe90",
-        storageBucket: "athleticsstream-bfe90.appspot.com",
-        messagingSenderId: "260965419764",
-        appId: "1:260965419764:web:2ecac5005ae89c09006ca1",
-        databaseURL : "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app/"
-    };
-
-    // Initialize Firebas
-    const app = initializeApp(firebaseConfig);
-
-
-    // Initialize Cloud Firestore and get a reference to the service
-    const dbRef = ref(getDatabase(app));
-
-    var db = getDatabase();
-
-    set(ref(db, 'football/clients/teamScores'), true);
-    set(ref(db, 'football/clients/stopwatch'), true);
-
-    //const querySnapshot = await getDocs(collection(db, "footballData"));
-    //
-    onValue(child(dbRef, `football`), (snapshot) => {
-        const clientRef = ref(db, "football/clients/teamScores");
-        const clientRef2 = ref(db, "football/clients/stopwatch");
-        onDisconnect(clientRef2).set(false);
-        onDisconnect(clientRef).set(false);
-        set(ref(db, 'football/clients/teamScores'), true);
-        set(ref(db, 'football/clients/stopwatch'), true);
-        docDataTemp = snapshot.val();
-        localStorage.setItem("docData", JSON.stringify(docDataTemp));
-        updateData()
-    });
-};
-*/
 
 var docData = {};
 var docDataTemp = {};
 var colors;
 //Update Data (Source js + refactoring)
-function updateData() {
+async function updateData() {
+    
+
+    var deltaStart = Date.now();
+    var minTimeout = 0;
+
     for (var index = 0; index < docDataTempTemp.length; index++) {
         var indexkey = docDataTempTemp[index].valueId.S;
         docDataTemp[indexkey] = docDataTempTemp[index];
@@ -138,17 +101,11 @@ function updateData() {
         'bis_secondary' : docDataTemp['secondaryColors']['bis'].S,
     }
 
-    updateStopwatch(docData);
+    //updateStopwatch(docData);
 
     if (docData['hide_1'] == false) {
-        if ($('.main-container').hasClass('hidden')) {
-            $('body')
-                .queue(elemShow('.main-container')).delay(500)
-                .queue(elemShow('.bottom-container')).delay(500)
-                .queue(elemShow('.top-container'))
-        }
-
         if ($('#gameName').text() != docData['gameName_1']) {
+            minTimeout += 1000;
             $('body')
                 .queue(elemHide('.top-container')).delay(1000)
                 .queue(updateSpecific('gameName', 'gameName_1'))
@@ -156,15 +113,18 @@ function updateData() {
         }
 
         if ($('#team_1').text() != docData['team_1'] || $('#team_2').text() != docData['team_2']) {
+            minTimeout += 3000;
             $('body')
                 .queue(elemHide('.top-container')).delay(500)
                 .queue(elemHide('.bottom-container')).delay(500)
-                .queue(elemHide('.main-container')).delay(1000)
+                .queue(elemHide('.main-container')).delay(500)
                 .queue(updateSpecific('team_1', 'team_1'))
                 .queue(updateIcon('team_1_icon', docData['team_1']))
                 .queue(updateIcon('team_2_icon', docData['team_2']))
                 .queue(updateColors())
                 .queue(updateSpecific('team_2', 'team_2'))
+                .queue(updateSpecific('team_1s', 'team_1s'))
+                .queue(updateSpecific('team_2s', 'team_2s'))
                 .queue(elemShow('.main-container')).delay(500)
                 .queue(elemShow('.bottom-container')).delay(500)
                 .queue(elemShow('.top-container')).delay(500)
@@ -175,7 +135,16 @@ function updateData() {
                 .queue(updateSpecific('team_1s', 'team_1s'))
                 .queue(updateSpecific('team_2s', 'team_2s'))
         }
+
+        if ($('.main-container').hasClass('hidden')) {
+            minTimeout += 1000;
+            $('body')
+                .queue(elemShow('.main-container')).delay(500)
+                .queue(elemShow('.bottom-container')).delay(500)
+                .queue(elemShow('.top-container'))
+        }
     } else {
+        minTimeout += 1000;
         $('body')
             .queue(elemHide('.top-container')).delay(500)
             .queue(elemHide('.bottom-container')).delay(500)
@@ -188,6 +157,15 @@ function updateData() {
             .queue(updateSpecific('team_1s', 'team_1s'))
             .queue(updateSpecific('team_2s', 'team_2s'))
     }
+
+    var timeDelta = Date.now() - deltaStart;
+    if (minTimeout < timeDelta) {
+        minTimeout = timeDelta + 1000;
+    }
+
+    await sleep(minTimeout - timeDelta);
+    fetchData();
+
 }
 
 
