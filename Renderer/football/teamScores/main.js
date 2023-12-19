@@ -221,48 +221,8 @@ function elemShow(elem) {
     }
 }
 
-function scoreShowLeft(elem) {
-	return function (next) {
-		$(elem).removeClass('fast hiddenLeft');	
-		next();
-	}
-}
-
-function scoreShowRight(elem) {
-	return function (next) {
-		$(elem).removeClass('fast hiddenRight');	
-		next();
-	}
-}
-
-function elemUpdate() {
-	return function(next) {
-		for (var prop in docData) {
-			$('#' + prop).text(docData[prop]);
-		}
-		next();
-	}
-}
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function checkColor(color) {
-	if (color == 'mis' || color == 'fis' || color == 'ais' || color == 'zis') {
-		return window[color]
-	} else {
-		return color
-	}
-}
-
-function componentToHex(c) {
-  var hex = c.toString(16);
-  return hex.length == 1 ? "0" + hex : hex;
-}
-
-function rgbToHex(r, g, b) {
-  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 function updateSpecific(htmlelem, docelem) {
@@ -306,7 +266,6 @@ function updateColors() {
         var gradientCSS = 'linear-gradient(to right, ' + colors[schoolName_right.toLowerCase() + '_primary'] + ' 0%, ' + colors[schoolName_left.toLowerCase() + '_primary'] + ' 100%)'
         $('#top-colored').css('background', gradientCSS);
         $('#bottom-colored').css('background', gradientCSS);
-        //'linear-gradient(90deg, ' + colors[schoolName_left.toLowerCase() + '_secondary'] + ' 0%, ' + colors[schoolName_right.toLowerCase() + '_secondary'] + ' 100%);'
         next();
     }
 }
