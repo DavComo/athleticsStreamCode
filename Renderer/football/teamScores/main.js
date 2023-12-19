@@ -38,7 +38,6 @@ function fetchData() {
         } else {
             // Update the UI with the fetched data
             docDataTempTemp = data.Items;
-            console.log("Updating data")
             updateData()
         }
     });
@@ -101,7 +100,7 @@ async function updateData() {
         'bis_secondary' : docDataTemp['secondaryColors']['bis'].S,
     }
 
-    //updateStopwatch(docData);
+    updateStopwatch(docData);
 
     if (docData['hide_1'] == false) {
         if ($('#gameName').text() != docData['gameName_1']) {
@@ -161,6 +160,9 @@ async function updateData() {
     var timeDelta = Date.now() - deltaStart;
     if (minTimeout < timeDelta) {
         minTimeout = timeDelta + 1000;
+    }
+    if (minTimeout < 1000) {
+        minTimeout = 1000;
     }
 
     await sleep(minTimeout - timeDelta);
@@ -315,7 +317,6 @@ async function updateStopwatch() {
         var timeinms = docData['stopwatchms'];
         var minutes = Math.floor(timeinms / 60000);
         var seconds = ((timeinms % 60000) / 1000).toFixed(0);
-        console.log(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'))
         $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));
     } else {
         while (docData['stopwatchrunning'] == true) {

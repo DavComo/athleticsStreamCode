@@ -15,79 +15,98 @@ var schoolPseudonyms = [
     ['SGSM', 'St Georges']
 ];
 
-
-//Initiate Data
 (function(window, document, undefined) {
   
     window.onload = init();
 
 })(window, document, undefined);
 
-var docDataTemp;
-function init() {
-    const firebaseConfig = {
-        apiKey: "AIzaSyBokVHaaTBGEAlExbksVjDTXm-Q3cFSoKw",
-        authDomain: "athleticsstream-bfe90.firebaseapp.com",
-        projectId: "athleticsstream-bfe90",
-        storageBucket: "athleticsstream-bfe90.appspot.com",
-        messagingSenderId: "260965419764",
-        appId: "1:260965419764:web:2ecac5005ae89c09006ca1",
-        databaseURL : "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app/"
+var dynamodb;
+var docDataTempTemp;
+
+function fetchData() {
+    const params = {
+        TableName: 'stream_' + streamData.streamId,
+        // Add any other parameters as needed
     };
 
-    // Initialize Firebas
-    const app = initializeApp(firebaseConfig);
-
-
-    // Initialize Cloud Firestore and get a reference to the service
-    const dbRef = ref(getDatabase(app));
-
-    var db = getDatabase();
-
-    set(ref(db, 'football/clients/teamScores'), true);
-
-    //const querySnapshot = await getDocs(collection(db, "footballData"));
-    //
-    onValue(child(dbRef, `football`), (snapshot) => {
-        const clientRef = ref(db, "football/clients/teamScores");
-        onDisconnect(clientRef).set(false);
-        set(ref(db, 'football/clients/teamScores'), true);
-        docDataTemp = snapshot.val();
-        localStorage.setItem("docData", JSON.stringify(docDataTemp));
-        updateData()
+    dynamodb.scan(params, function(err, data) {
+        if (err) {
+            console.error("Error fetching data from DynamoDB:", err);
+        } else {
+            // Update the UI with the fetched data
+            docDataTempTemp = data.Items;
+            console.log("Updating data")
+            updateData()
+        }
     });
+}
+
+function init() {
+    // Initialize AWS SDK and DynamoDB client
+    AWS.config.update({
+        region: streamData.awsRegion,
+        accessKeyId: streamData.awsAccessKey,
+        secretAccessKey: streamData.awsSecretKey
+    });
+
+    dynamodb = new AWS.DynamoDB();
+
+    fetchData();
 };
 
-var docData;
+var docData = {};
+var docDataTemp = {};
 var colors;
 //Update Data (Source js + refactoring)
-function updateData() {
+async function updateData() {
+    var deltaStart = Date.now();
+    var minTimeout = 0;
+
+    for (var index = 0; index < docDataTempTemp.length; index++) {
+        var indexkey = docDataTempTemp[index].valueId.S;
+        docDataTemp[indexkey] = docDataTempTemp[index];
+    }
+
     docData = {
-        "team_1" : docDataTemp['gameScreen']['sideNames']['side_1'],
-        "team_2" : docDataTemp['gameScreen']['sideNames']['side_2'],
-        "team_1s" : docDataTemp['gameScreen']['scores']['side_1'],
-        "team_2s" : docDataTemp['gameScreen']['scores']['side_2'],
-        "gameName_1" : docDataTemp['gameScreen']['insets']['gameName'],
-        "hide_1" : !docDataTemp['gameScreen']['insets']['showGame'],
-        "stopwatchms" : docDataTemp['gameScreen']['stopwatch']['valueMs'],
-        "stopwatchrunning" : docDataTemp['gameScreen']['stopwatch']['running'],
-        "startedAt" : docDataTemp['gameScreen']['stopwatch']['startedAt'],
-        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch']['showStopwatch']
+        "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
+        "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,
+        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].N,
+        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].N,
+        "gameName_1" : docDataTemp['gameScreen']['gameName'].S,
+        "hide_1" : !docDataTemp['gameScreen']['showGame'].BOOL,
+        "stopwatchms" : docDataTemp['gameScreen']['stopwatchValueMs'].N,
+        "stopwatchrunning" : docDataTemp['gameScreen']['stopwatchRunning'].BOOL,
+        "startedAt" : docDataTemp['gameScreen']['stopwatchStartedAt'].N,
+        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch'].BOOL
     }
 
     colors = {
-        'mis_primary' : docDataTemp['colors']['mis']['primary'],
-        'mis_secondary' : docDataTemp['colors']['mis']['secondary'],
-        'ais_primary' : docDataTemp['colors']['ais']['primary'],
-        'ais_secondary' : docDataTemp['colors']['ais']['secondary'],
-        'fis_primary' : docDataTemp['colors']['fis']['primary'],
-        'fis_secondary' : docDataTemp['colors']['fis']['secondary'],
-        'zis_primary' : docDataTemp['colors']['zis']['primary'],
-        'zis_secondary' : docDataTemp['colors']['zis']['secondary'],
-        'sgsm_primary' : docDataTemp['colors']['sgsm']['primary'],
-        'sgsm_secondary' : docDataTemp['colors']['sgsm']['secondary'],
+        'mis_primary' : docDataTemp['primaryColors']['mis'].S,
+        'mis_secondary' : docDataTemp['secondaryColors']['mis'].S,
+        'ais_primary' : docDataTemp['primaryColors']['ais'].S,
+        'ais_secondary' : docDataTemp['secondaryColors']['ais'].S,
+        'fis_primary' : docDataTemp['primaryColors']['fis'].S,
+        'fis_secondary' : docDataTemp['secondaryColors']['fis'].S,
+        'zis_primary' : docDataTemp['primaryColors']['zis'].S,
+        'zis_secondary' : docDataTemp['secondaryColors']['zis'].S,
+        'sgsm_primary' : docDataTemp['primaryColors']['sgsm'].S,
+        'sgsm_secondary' : docDataTemp['secondaryColors']['sgsm'].S,
+        'bis_primary' : docDataTemp['primaryColors']['bis'].S,
+        'bis_secondary' : docDataTemp['secondaryColors']['bis'].S,
     }
-    updateStopwatch();
+    //updateStopwatch();
+
+    var timeDelta = Date.now() - deltaStart;
+    if (minTimeout < timeDelta) {
+        minTimeout = timeDelta + 1000;
+    }
+    if (minTimeout < 1000) {
+        minTimeout = 1000;
+    }
+
+    await sleep(minTimeout - timeDelta);
+    //fetchData();
 }
 
 async function updateStopwatch(docData) {
