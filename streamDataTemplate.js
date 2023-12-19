@@ -1,6 +1,6 @@
 var streamData = {
     "awsRegion": "eu-central-1",
-    "awsAccessKey": "Test",
+    "awsAccessKey": "",
     "awsSecretKey": "",
     "streamId": "1"
 }
