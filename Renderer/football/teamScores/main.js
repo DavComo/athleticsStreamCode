@@ -75,8 +75,8 @@ async function updateData() {
     docData = {
         "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
         "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,
-        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].N,
-        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].N,
+        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].S,
+        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].S,
         "gameName_1" : docDataTemp['gameScreen']['gameName'].S,
         "hide_1" : !docDataTemp['gameScreen']['showGame'].BOOL,
         "stopwatchms" : docDataTemp['gameScreen']['stopwatchValueMs'].N,
@@ -142,6 +142,20 @@ async function updateData() {
                 .queue(elemShow('.bottom-container')).delay(500)
                 .queue(elemShow('.top-container'))
         }
+
+        if (docData['showStopwatch'] == true) {
+            if ($('.bottom-container').hasClass('hidden')) {
+                minTimeout += 1000;
+                $('body')
+                    .queue(elemShow('.bottom-container')).delay(500)
+            }
+        } else {
+            if (!$('.bottom-container').hasClass('hidden')) {
+                minTimeout += 1000;
+                $('body')
+                    .queue(elemHide('.bottom-container')).delay(500)
+            }
+        }
     } else {
         minTimeout += 1000;
         $('body')
@@ -187,20 +201,6 @@ var formation2 = [];
 function elemHide(elem) {
 	return function (next) {
 		$(elem).addClass('fast hidden');
-		next();
-	}
-}
-
-function scoreHideLeft(elem) {
-	return function (next) {
-		$(elem).addClass('fast hiddenLeft');	
-		next();
-	}
-}
-
-function scoreHideRight(elem) {
-	return function (next) {
-		$(elem).addClass('fast hiddenRight');	
 		next();
 	}
 }

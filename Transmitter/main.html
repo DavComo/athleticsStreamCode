@@ -9,7 +9,10 @@
         <link rel="stylesheet" href="./experimentalCSS-1.css">
         <link rel="stylesheet" href="./main.css">
         <script type="module" src="./main.js"></script>
-        <script type="module" src="./stopwatch.js"></script>
+
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1520.0.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <script src="../streamData.js"></script>
 
         <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore-compat.js"></script>
@@ -106,20 +109,11 @@
                         <span class="tabs-tab" role="tab" id="pickEventNameTab">
                             Event Name
                         </span>
-                        <span class="tabs-tab" role="tab" id="pickPitchSidesTab">
-                            Pitch Sides
-                        </span>
                         <span class="tabs-tab" role="tab" id="pickTeamScoresTab">
                             Team Scores
                         </span>
                         <span class="tabs-tab" role="tab" id="pickStopwatchTab">
                             Stopwatch
-                        </span>
-                        <span class="tabs-tab" role="tab" id="pickCardSystemTab">
-                            Card System
-                        </span>
-                        <span class="tabs-tab" role="tab" id="pickAnnouncementTab">
-                            Announcement
                         </span>
                     </span>
                 </div>
@@ -275,7 +269,6 @@
                         </div>
                     </div>
                 </li>
-                <!-- Test thing Setter page -->
 
                 <!-- Event Name Setter page-->
                 <li id="eventName">
@@ -323,94 +316,6 @@
                                 <dd>
                                     <div class="inputGroup inputGroup--joined">
                                         <input type="checkbox" class="checks c1 clickToShow_1" id="showEvent" style="height: 30px; width: 30px">
-                                    </div>
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Pitch Sides Setter page -->
-                <li id="pitchSides">
-                    <div class="block-container">
-                        <div class="block-body">
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Side Names</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 1 Name</span>
-                                        <input type="text" class="input texts t1" id="side_1-name">
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 2 Name</span>
-                                        <input type="text" class="input texts t1" id="side_2-name">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 17px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Show Layout</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="checkbox" class="checks c1 clickToShow_1" id="showLayout" style="height: 30px; width: 30px">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 90px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Colors</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 1 Goalie Color</span>
-                                        <input type="text" class="input texts t1" id="side_1-goalie">
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 1 Player Color</span>
-                                        <input type="text" class="input texts t1" id="side_1-player">
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 2 Goalie Color</span>
-                                        <input type="text" class="input texts t1" id="side_2-goalie">
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 2 Player Color</span>
-                                        <input type="text" class="input texts t1" id="side_2-player">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Formation</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 1 Formation</span>
-                                        <input type="text" class="input texts t1" id="side_1-formation">
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Side 2 Formation</span>
-                                        <input type="text" class="input texts t1" id="side_2-formation">
                                     </div>
                                 </dd>
                             </dl>
@@ -509,173 +414,6 @@
                                 <dd>
                                     <div class="inputGroup inputGroup--joined">
                                         <input type="checkbox" class="checks c1 clickToShow_1" id="showStopwatch" style="height: 30px; width: 30px">
-                                    </div>
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Card System -->
-                <li id="cardSystem">
-                    <div class="block-container">
-                        <div class="block-body">
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Card Type</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <select type="text" class="texts t1 eventScene_1 input" id="cardType">
-                                            <option value="doubleYellow" selected="doubleYellow" id="doubleYellow">Double Yellow</option>
-                                            <option value="yellow" selected="yellow" id="yellow">Yellow</option>
-                                            <option value="red" selected="red" id="red">Red</option>
-                                        </select>
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Team</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="text" class="input texts t1" id="cardTeam">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Player Number</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="text" class="input texts t1" id="playerNumber">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Team Name</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="text" class="input texts t1" id="playerName">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 17px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Show Card</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="checkbox" class="checks c1 clickToShow_1" id="showCard" style="height: 30px; width: 30px">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Show Length (ms)</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="text" class="input texts t1" id="showLength-Card">
-                                    </div>
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Announcements -->
-                <li id="announcement">
-                    <div class="block-container">
-                        <div class="block-body">
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Announcement Type</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <select type="text" class="texts t1 eventScene_1 input" id="announcementType">
-                                            <option value="freekick" selected="freekick" id="freekick">Freekick</option>
-                                            <option value="penalty" selected="penalty" id="penalty">Penalty</option>
-                                        </select>
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Awarded Team</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="text" class="input texts t1" id="awardedTeam">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 22px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Show Length (ms)</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="text" class="input texts t1" id="showLength-Announcement">
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt style="padding-top: 17px;">
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">Show Announcement</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <input type="checkbox" class="checks c1 clickToShow_1" id="showAnnouncement" style="height: 30px; width: 30px">
                                     </div>
                                 </dd>
                             </dl>

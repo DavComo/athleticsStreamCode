@@ -10,14 +10,27 @@ var schools = ["mis", "fis", "ais", "zis", "sgsm", "bis"];
 
 })(window, document, undefined);
 
+var dynamodb;
+var dynamoClient;
+
 async function init() {  
     var inputs = document.getElementsByTagName("input")
     for (var i = 0; i < inputs.length; i++) {
         inputs[i].value = "Loading..."
     };
+    // Initialize AWS SDK and DynamoDB client
+    AWS.config.update({
+        region: streamData.awsRegion,
+        accessKeyId: streamData.awsAccessKey,
+        secretAccessKey: streamData.awsSecretKey
+    });
+
+    dynamodb = new AWS.DynamoDB();
+    dynamoClient = new AWS.DynamoDB.DocumentClient();
 
     initButtons();
-    initData();
+
+    fetchData();
 }
 
 
@@ -76,268 +89,296 @@ function initButtons() {
         var choiceIds = ["eventScene"];
         var toggleIds = ["showEvent"];
 
-        const db = getDatabase();
 
         //Save Color Page
         schools.forEach(school => {
-            set(ref(db, 'football/colors/' + school), { 
-                'primary' : document.getElementById(school + "Primary").value, 
-                'secondary' : document.getElementById(school + "Secondary").value
-            });
+            var params = {
+                TableName: tableName,
+                Key: {
+                  "valueId": "primaryColors"
+                },
+                UpdateExpression: ("set " + school + " = :r"),
+                ExpressionAttributeValues: {
+                    ":r": document.getElementById(school + "Primary").value,
+
+                },
+                ReturnValues: "UPDATED_NEW"
+              };
+              
+            dynamoClient.update(params, function(err, data) {});
+
+            var params = {
+                TableName: tableName,
+                Key: {
+                  "valueId": "secondaryColors"
+                },
+                UpdateExpression: ("set " + school + " = :r"),
+                ExpressionAttributeValues: {
+                    ":r": document.getElementById(school + "Secondary").value,
+
+                },
+                ReturnValues: "UPDATED_NEW"
+              };
+              
+            dynamoClient.update(params, function(err, data) {});
         });
 
-        //Save Event Name
-        set(ref(db, 'football/eventClassifier/'), { 
-            'eventName' : document.getElementById("eventNameIs").value, 
-            'eventScene' : document.getElementById("eventScene").value,
-            'showEvent' : document.getElementById("showEvent").checked
-        });
+        var params = {
+            TableName: tableName,
+            Key: {
+              "valueId": "eventClassifier"
+            },
+            UpdateExpression: ("set eventName = :r, eventScene = :s, showEvent = :t"),
+            ExpressionAttributeValues: {
+                ":r": document.getElementById("eventNameIs").value,
+                ":s": document.getElementById("eventScene").value,
+                ":t": document.getElementById("showEvent").checked
+            },
+            ReturnValues: "UPDATED_NEW"
+          };
+          
+        dynamoClient.update(params, function(err, data) {});
 
-        //Save Pitch Sides
-        set(ref(db, 'football/pitchSides/showPitch'), { 
-            'showPitch' : document.getElementById("showLayout").checked
-        });
+        var params = {
+            TableName: tableName,
+            Key: {
+              "valueId": "gameScreen"
+            },
+            UpdateExpression: ("set gameName = :r, showGame = :s, sideOneName = :t, sideTwoName = :u, sideOneScore = :v, sideTwoScore = :w, showStopwatch = :x"),
+            ExpressionAttributeValues: {
+                ":r": document.getElementById("gameName").value,
+                ":s": document.getElementById("showGame").checked,
+                ":t": document.getElementById("side_1-name-scores").value,
+                ":u": document.getElementById("side_2-name-scores").value,
+                ":v": document.getElementById("side_1-score").value,
+                ":w": document.getElementById("side_2-score").value,
+                ":x": document.getElementById("showStopwatch").checked
+            },
+            ReturnValues: "UPDATED_NEW"
+          };
+          
+        dynamoClient.update(params, function(err, data) {});
 
-        set(ref(db, 'football/pitchSides/sideNames'), { 
-            'side_1' : document.getElementById("side_1-name").value, 
-            'side_2' : document.getElementById("side_2-name").value
-        });
-
-        set(ref(db, 'football/pitchSides/colors'), { 
-            'side_1-goalie' : schoolColorToWebColor(document.getElementById("side_1-goalie").value), 
-            'side_1-player' : schoolColorToWebColor(document.getElementById("side_1-player").value), 
-            'side_2-goalie' : schoolColorToWebColor(document.getElementById("side_2-goalie").value), 
-            'side_2-player' : schoolColorToWebColor(document.getElementById("side_2-player").value) 
-        });
-
-        set(ref(db, 'football/pitchSides/formations'), { 
-            'formation_1' : document.getElementById("side_1-formation").value, 
-            'formation_2' : document.getElementById("side_2-formation").value
-        });
-
-        //Save Team Scores
-        set(ref(db, 'football/gameScreen/scores'), { 
-            'side_1' : document.getElementById("side_1-score").value, 
-            'side_2' : document.getElementById("side_2-score").value
-        });
-
-        set(ref(db, 'football/gameScreen/sideNames'), { 
-            'side_1' : document.getElementById("side_1-name-scores").value, 
-            'side_2' : document.getElementById("side_2-name-scores").value
-        });
-
-        set(ref(db, 'football/gameScreen/insets'), { 
-            'showGame' : document.getElementById("showGame").checked, 
-            'gameName' : document.getElementById("gameName").value
-        });
-
-        //Save Card System
-        set(ref(db, 'football/cardPopup'), { 
-            'team' : document.getElementById("cardTeam").value,
-            'cardType' : document.getElementById("cardType").value, 
-            'playerNumber' : document.getElementById("playerNumber").value,
-            'playerName' : document.getElementById("playerName").value, 
-            'showLengthMs' : document.getElementById("showLength-Card").value,
-            'showCard' : document.getElementById("showCard").checked
-        });
-
-        //Save Announcements
-        set(ref(db, 'football/miscPopup'), { 
-            'announcementType' : document.getElementById("announcementType").value, 
-            'awardedTeam' : document.getElementById("awardedTeam").value,
-            'showLengthMs' : document.getElementById("showLength-Announcement").value, 
-            'showPopup' : document.getElementById("showAnnouncement").checked,
-        });
-
-        //Save Stopwatch (Only works for "Show Stopwatch" button)
-        set(ref(db, 'football/gameScreen/showStopwatch'), { 
-            'showStopwatch' : document.getElementById("showStopwatch").checked, 
-        });
-        set(ref(db, 'football/gameScreen/stopwatch/valueMs'), timeStringToMs(document.getElementById("valueMs").value));
-    
-        /*catch (e) {
-            if (e instanceof PERMISSION_DENIED) {
-                alert("You do not have permission to write to this data. Please check permissions.")
-            } else {
-                alert("An unknown error has occured in database write. Please contact the administrator.")
-            }
-        }*/
         await new Promise(r => setTimeout(r, 500));
 
         document.getElementById("saveValues").innerText = "Save Values"
         document.getElementById("saveValues").style.removeProperty("background-color")
+        
     }
 }
 
-function initData() {
-    const firebaseConfig = {
-        apiKey: "AIzaSyBokVHaaTBGEAlExbksVjDTXm-Q3cFSoKw",
-        authDomain: "athleticsstream-bfe90.firebaseapp.com",
-        databaseURL: "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "athleticsstream-bfe90",
-        storageBucket: "athleticsstream-bfe90.appspot.com",
-        messagingSenderId: "260965419764",
-        appId: "1:260965419764:web:2ecac5005ae89c09006ca1",
-        measurementId: "G-20KJ9JRV7H"
-      };
 
-    // Initialize Firebas
-    const app = initializeApp(firebaseConfig);
+var dynamodb;
+var docDataTempTemp;
+var tableName;
 
+function fetchData() {
+    tableName = 'stream_' + streamData.streamId;
+    const params = {
+        TableName: tableName,
+        // Add any other parameters as needed
+    };
 
-    // Initialize Cloud Firestore and get a reference to the service
-    const dbRef = ref(getDatabase(app));
-
-    //const querySnapshot = await getDocs(collection(db, "footballData"));
-    //console.log(querySnapshot.docs[0].data()['testValue']);
-    onValue(child(dbRef, `football`), (snapshot) => {
-        docData = snapshot.val();
-        localStorage.setItem("docData", JSON.stringify(docData));
-        updateData()
+    dynamodb.scan(params, function(err, data) {
+        if (err) {
+            console.error("Error fetching data from DynamoDB:", err);
+        } else {
+            // Update the UI with the fetched data
+            docDataTempTemp = data.Items;
+            updateData()
+        }
     });
 }
 
-var db = getDatabase();
-var isConnected;
-onValue(ref(db, ".info/connected"), (snap) => {
-    if (snap.val() == true) {
-        isConnected = true
-        if (docData == null) {docData = JSON.parse(localStorage.getItem("docData"))};
-        flipConnectionsServerError()
-    } else if (snap.val() == false) {
-        isConnected = false
-        flipConnectionsServerError()
-    }
-});
-
-
-function flipConnectionsServerError() {
-    var connectionBlocks = document.getElementsByClassName("connectionBlock")
-    if (isConnected == false) {
-        var serverBlock = document.getElementById("serverBlock")
-        serverBlock.style.color = "red"
-        serverBlock.children[2].innerText = "Not Connected"
-        serverBlock.children[0].style.backgroundColor = "red"
-        document.getElementById("serverStatus").style.color = "red";
-        document.getElementById("serverStatus").innerText = "Server Disconnected";
-        document.getElementsByClassName('formSubmitRow-main')[0].style.display = "none";
-    } else {
-        var serverBlock = document.getElementById("serverBlock")
-        serverBlock.style.color = "green"
-        serverBlock.children[2].innerText = "Connected"
-        serverBlock.children[0].style.backgroundColor = "green"
-        document.getElementById("serverStatus").style.color = "green";
-        document.getElementById("serverStatus").innerText = "Server Online";
-        document.getElementsByClassName('formSubmitRow-main')[0].style.display = "block";
-    }
-    for (var i = 0; i < connectionBlocks.length; i++) {
-        if (isConnected == false) {
-            connectionBlocks[i].style.color = "red"
-            connectionBlocks[i].children[2].innerText = "No Server Connection"
-            connectionBlocks[i].children[0].style.backgroundColor = "red"
-        }
-    }
-}
-
+var docDataTemp = {};
+var colors;
+var docData = {}
 function updateData() {
-    //Connection Info
-    var serverBlock = document.getElementById("serverBlock")
-    serverBlock.style.color = "green"
-    serverBlock.children[2].innerText = "Connected"
-    serverBlock.children[0].style.backgroundColor = "green"
-    document.getElementById("serverStatus").style.color = "green";
-    document.getElementById("serverStatus").innerText = "Server Online";
-    document.getElementsByClassName('formSubmitRow-main')[0].style.display = "block";
-
-    var connectionBlocks = document.getElementsByClassName("connectionBlock")
-    for (var i = 0; i < connectionBlocks.length; i++) {
-        if (docData['clients'][connectionBlocks[i].id.slice(0, -6)] == true) {
-            connectionBlocks[i].style.color = "green"
-            connectionBlocks[i].children[2].innerText = "Connected"
-            connectionBlocks[i].children[0].style.backgroundColor = "green"
-        } else {
-            connectionBlocks[i].style.color = "red"
-            connectionBlocks[i].children[2].innerText = "Not Connected"
-            connectionBlocks[i].children[0].style.backgroundColor = "red"
-        }
+    for (var index = 0; index < docDataTempTemp.length; index++) {
+        var indexkey = docDataTempTemp[index].valueId.S;
+        docDataTemp[indexkey] = docDataTempTemp[index];
     }
 
+
+    docData = {
+        "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
+        "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,
+        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].S,
+        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].S,
+        "gameName_1" : docDataTemp['gameScreen']['gameName'].S,
+        "hide_1" : docDataTemp['gameScreen']['showGame'].BOOL,
+        "stopwatchms" : docDataTemp['gameScreen']['stopwatchValueMs'].N,
+        "stopwatchrunning" : docDataTemp['gameScreen']['stopwatchRunning'].BOOL,
+        "startedAt" : docDataTemp['gameScreen']['stopwatchStartedAt'].N,
+        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch'].BOOL,
+        "eventName" : docDataTemp['eventClassifier']['eventName'].S,
+        "eventScene" : docDataTemp['eventClassifier']['eventScene'].S,
+        "showEvent" : docDataTemp['eventClassifier']['showEvent'].BOOL,
+    }
+
+    colors = {
+        'mis_primary' : docDataTemp['primaryColors']['mis'].S,
+        'mis_secondary' : docDataTemp['secondaryColors']['mis'].S,
+        'ais_primary' : docDataTemp['primaryColors']['ais'].S,
+        'ais_secondary' : docDataTemp['secondaryColors']['ais'].S,
+        'fis_primary' : docDataTemp['primaryColors']['fis'].S,
+        'fis_secondary' : docDataTemp['secondaryColors']['fis'].S,
+        'zis_primary' : docDataTemp['primaryColors']['zis'].S,
+        'zis_secondary' : docDataTemp['secondaryColors']['zis'].S,
+        'sgsm_primary' : docDataTemp['primaryColors']['sgsm'].S,
+        'sgsm_secondary' : docDataTemp['secondaryColors']['sgsm'].S,
+        'bis_primary' : docDataTemp['primaryColors']['bis'].S,
+        'bis_secondary' : docDataTemp['secondaryColors']['bis'].S,
+    }
 
     //Color Page
     for (var i = 0; i < schools.length; i++) {
-        document.getElementById(schools[i] + "Primary").value = docData["colors"][schools[i]]["primary"];
-        document.getElementById(schools[i] + "Secondary").value = docData["colors"][schools[i]]["secondary"];
+        document.getElementById(schools[i] + "Primary").value = colors[schools[i] + "_primary"];
+        document.getElementById(schools[i] + "Secondary").value = colors[schools[i] + "_secondary"];
 
-        document.getElementById(schools[i] + "PrimaryColor").style.backgroundColor = docData["colors"][schools[i]]["primary"];
-        document.getElementById(schools[i] + "SecondaryColor").style.backgroundColor = docData["colors"][schools[i]]["secondary"];
+        document.getElementById(schools[i] + "PrimaryColor").style.backgroundColor = colors[schools[i] + "_primary"];
+        document.getElementById(schools[i] + "SecondaryColor").style.backgroundColor = colors[schools[i] + "_secondary"];
 
     }
 
     //Event Name
-    document.getElementById("eventNameIs").value = docData["eventClassifier"]["eventName"];
-    document.getElementById(docData["eventClassifier"]["eventScene"]).selected = true;
-    document.getElementById("showEvent").checked = docData["eventClassifier"]["showEvent"];
-
-    //Pitch Layout
-    document.getElementById("side_1-name").value = docData["pitchSides"]["sideNames"]["side_1"];
-    document.getElementById("side_2-name").value = docData["pitchSides"]["sideNames"]["side_2"];
-
-    document.getElementById("showLayout").checked = docData["pitchSides"]["showPitch"]["showPitch"];
-
-    document.getElementById("side_1-goalie").value = docData["pitchSides"]["colors"]["side_1-goalie"];
-    document.getElementById("side_1-player").value = docData["pitchSides"]["colors"]["side_1-player"];
-    document.getElementById("side_2-goalie").value = docData["pitchSides"]["colors"]["side_2-goalie"];
-    document.getElementById("side_2-player").value = docData["pitchSides"]["colors"]["side_2-player"];
-
-    document.getElementById("side_1-formation").value = docData["pitchSides"]["formations"]["formation_1"];
-    document.getElementById("side_2-formation").value = docData["pitchSides"]["formations"]["formation_2"];
+    document.getElementById("eventNameIs").value = docData["eventName"];
+    document.getElementById(docData["eventScene"]).selected = true;
+    document.getElementById("showEvent").checked = docData["showEvent"];
 
     //Team Scores
-    document.getElementById("side_1-name-scores").value = docData["gameScreen"]["sideNames"]["side_1"];
-    document.getElementById("side_2-name-scores").value = docData["gameScreen"]["sideNames"]["side_2"];
+    document.getElementById("side_1-name-scores").value = docData["team_1"];
+    document.getElementById("side_2-name-scores").value = docData["team_2"];
 
-    document.getElementById("side_1-score").value = docData["gameScreen"]["scores"]["side_1"];
-    document.getElementById("side_2-score").value = docData["gameScreen"]["scores"]["side_2"];
+    document.getElementById("side_1-score").value = docData["team_1s"];
+    document.getElementById("side_2-score").value = docData["team_2s"];
 
-    document.getElementById("gameName").value = docData["gameScreen"]["insets"]["gameName"];
+    document.getElementById("gameName").value = docData["gameName_1"];
 
-    document.getElementById("showGame").checked = docData["gameScreen"]["insets"]["showGame"];
+    document.getElementById("showGame").checked = docData["hide_1"];
 
     //Stopwatch
     //Rest of code in stopwatch.js file
-    if (document.getElementById("valueMs").value == "") {
-        document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 0 ms"
+    if (document.getElementById("valueMs").value == "Loading...") {
+        document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 000 ms"
     }
-    document.getElementById("showStopwatch").checked = docData["gameScreen"]["showStopwatch"]["showStopwatch"];
-    
-    //Card System
-    document.getElementById(docData["cardPopup"]["cardType"]).selected = true;
+    document.getElementById("showStopwatch").checked = docData["showStopwatch"];
 
-    document.getElementById("cardTeam").value = docData["cardPopup"]["team"];
-    document.getElementById("playerNumber").value = docData["cardPopup"]["playerNumber"];
-    document.getElementById("playerName").value = docData["cardPopup"]["playerName"];
-
-    document.getElementById("showCard").checked = docData["cardPopup"]["showCard"];
-
-    document.getElementById("showLength-Card").value = docData["cardPopup"]["showLengthMs"];
-
-
-    //Announcement
-    document.getElementById(docData["miscPopup"]["announcementType"]).selected = true;
-
-    document.getElementById("awardedTeam").value = docData["miscPopup"]["awardedTeam"];
-    document.getElementById("showLength-Announcement").value = docData["miscPopup"]["showLengthMs"];
-
-    document.getElementById("showAnnouncement").checked = docData["miscPopup"]["showPopup"];
+    initStopwatch();
 }
 
-function schoolColorToWebColor(schoolColor) {
-    if (schoolColor.toLowerCase().includes("primary") || schoolColor.toLowerCase().includes("secondary")) {
-        var school = schoolColor.slice(0, 3).toLowerCase();
-        var identifier = schoolColor.slice(3).toLowerCase();
-        return docData["colors"][school][identifier];
-    } else {
-        return schoolColor;
+
+var stopwatchStarted;
+var startOfStopwatch;
+var addedTime = "notInitialized";
+
+function initStopwatch() {
+    stopwatchStarted = docData["stopwatchrunning"];
+    startOfStopwatch = docData["startedAt"];
+    //Init stopwatch buttons
+    if (stopwatchStarted) {
+        document.getElementById("startAndStop").innerText = 'Stop';
+    }
+
+    document.getElementById("startAndStop").onclick = function() {
+        if (stopwatchStarted == true) {
+            stopwatchStarted = false;
+            document.getElementById("startAndStop").innerText = 'Start';
+            var params = {
+                TableName: tableName,
+                Key: {
+                  "valueId": "gameScreen"
+                },
+                UpdateExpression: "set stopwatchRunning = :r, stopwatchStartedAt = :s, stopwatchValueMs = :v",
+                ExpressionAttributeValues: {
+                    ":r": false,
+                    ":s": startOfStopwatch - addedTime,
+                    ":v": timeStringToMs(document.getElementById("valueMs").value)
+
+                },
+                ReturnValues: "UPDATED_NEW"
+              };
+              
+            dynamoClient.update(params, function(err, data) {});
+
+        } else if (stopwatchStarted == false) {
+            startOfStopwatch = Date.now();
+            if (document.getElementById("valueMs").value != NaN) {
+                addedTime = timeStringToMs(document.getElementById("valueMs").value);
+            } else {
+                addedTime = 0;
+            }
+            stopwatchStarted = true;
+            document.getElementById("startAndStop").innerText = 'Stop';
+
+            var params = {
+                TableName: tableName,
+                Key: {
+                  "valueId": "gameScreen"
+                },
+                UpdateExpression: "set stopwatchRunning = :r, stopwatchStartedAt = :s, stopwatchValueMs = :v",
+                ExpressionAttributeValues: {
+                    ":r": true,
+                    ":s": startOfStopwatch - addedTime,
+                    ":v": timeStringToMs(document.getElementById("valueMs").value)
+                },
+                ReturnValues: "UPDATED_NEW"
+              };
+              
+            dynamoClient.update(params, function(err, data) {});
+
+            updateStopwatch();
+        }
+    };
+    updateStopwatch();
+
+    document.getElementById("reset").onclick = function() {
+        startOfStopwatch = Date.now();
+        document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 000 ms"
+
+        var params = {
+            TableName: tableName,
+            Key: {
+              "valueId": "gameScreen"
+            },
+            UpdateExpression: "set stopwatchRunning = :r, stopwatchStartedAt = :s, stopwatchValueMs = :v",
+            ExpressionAttributeValues: {
+                ":r": stopwatchStarted,
+                ":s": Date.now(),
+                ":v": 0
+            },
+            ReturnValues: "UPDATED_NEW"
+          };
+          
+        dynamoClient.update(params, function(err, data) {});
+    }
+}
+
+async function updateStopwatch() {
+    while (stopwatchStarted) {
+        var ms = Date.now() - startOfStopwatch
+        let seconds = Math.floor(ms / 1000);
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+        document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
+        await sleep(1);
+    }
+    if (stopwatchStarted == false) {
+        if (docData["stopwatchms"] != timeStringToMs(document.getElementById("valueMs").value)) {
+            var params = {
+                Key: {
+                  "valueId": "gameScreen"
+                },
+                UpdateExpression: "set stopwatchValueMs = :v",
+                ExpressionAttributeValues: {
+                    ":v": timeStringToMs(document.getElementById("valueMs").value)
+
+                },
+                ReturnValues: "UPDATED_NEW"
+              };
+              
+            dynamoClient.update(params, function(err, data) {});
+        }
     }
 }
 
@@ -354,4 +395,8 @@ function timeStringToMs(timeString) {
   
     const totalMs = msInHour + msInMinute + msInSecond + milliseconds;
     return totalMs;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
