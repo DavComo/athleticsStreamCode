@@ -24,12 +24,12 @@ var schoolPseudonyms = [
 })(window, document, undefined);
 
 var dynamodb;
+var dynamoClient;
 var docDataTempTemp;
 
 function fetchData() {
     const params = {
-        TableName: 'stream_' + streamData.streamId,
-        // Add any other parameters as needed
+        TableName: ('stream_' + streamData.streamId),
     };
 
     dynamodb.scan(params, function(err, data) {
@@ -52,6 +52,37 @@ function init() {
     });
 
     dynamodb = new AWS.DynamoDB();
+    dynamoClient = new AWS.DynamoDB.DocumentClient();
+
+    var params = {
+        TableName: ('stream_' + streamData.streamId),
+        Key: {
+          "valueId": "clientStatuses"
+        },
+        UpdateExpression: "set teamScores = :r",
+        ExpressionAttributeValues: {
+            ":r": true,
+        },
+        ReturnValues: "UPDATED_NEW"
+      };
+      
+    dynamoClient.update(params, function(err, data) {});
+
+    window.addEventListener("beforeunload", function(e){
+        var params = {
+            TableName: tableName,
+            Key: {
+              "valueId": "clientStatuses"
+            },
+            UpdateExpression: "set teamScores = :r",
+            ExpressionAttributeValues: {
+                ":r": false,
+            },
+            ReturnValues: "UPDATED_NEW"
+          };
+          
+        dynamoClient.update(params, function(err, data) {});
+     });
 
     fetchData();
 };

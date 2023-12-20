@@ -356,7 +356,7 @@ function initStopwatch() {
 
 async function updateStopwatch() {
     while (stopwatchStarted) {
-        var ms = Date.now() - startOfStopwatch
+        var ms = (Date.now() - startOfStopwatch) + addedTime;
         let seconds = Math.floor(ms / 1000);
         let minutes = Math.floor(seconds / 60);
         let hours = Math.floor(minutes / 60);
