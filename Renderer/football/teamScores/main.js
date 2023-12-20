@@ -35,7 +35,9 @@ function fetchData() {
     dynamodb.scan(params, function(err, data) {
         if (err) {
             console.error("Error fetching data from DynamoDB:", err);
-            window.location.replace('http://localhost:5500/401.html')
+            if (err.code == "AccessDeniedException") {
+                window.location.replace('http://localhost:5500/401.html')
+            }
         } else {
             // Update the UI with the fetched data
             docDataTempTemp = data.Items;
