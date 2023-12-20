@@ -29,12 +29,13 @@ var docDataTempTemp;
 
 function fetchData() {
     const params = {
-        TableName: ('stream_' + streamData.streamId),
+        TableName: streamData.dbName,
     };
 
     dynamodb.scan(params, function(err, data) {
         if (err) {
             console.error("Error fetching data from DynamoDB:", err);
+            window.location.replace('http://localhost:5500/401.html')
         } else {
             // Update the UI with the fetched data
             docDataTempTemp = data.Items;
@@ -55,7 +56,7 @@ function init() {
     dynamoClient = new AWS.DynamoDB.DocumentClient();
 
     var params = {
-        TableName: ('stream_' + streamData.streamId),
+        TableName: streamData.dbName,
         Key: {
           "valueId": "clientStatuses"
         },
@@ -106,10 +107,10 @@ async function updateData() {
     docData = {
         "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
         "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,
-        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].S,
-        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].S,
+        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].N,
+        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].N,
         "gameName_1" : docDataTemp['gameScreen']['gameName'].S,
-        "hide_1" : !docDataTemp['gameScreen']['showGame'].BOOL,
+        "hide_1" : !docDataTemp['gameScreen']['showScore'].BOOL,
         "stopwatchms" : docDataTemp['gameScreen']['stopwatchValueMs'].N,
         "stopwatchrunning" : docDataTemp['gameScreen']['stopwatchRunning'].BOOL,
         "startedAt" : docDataTemp['gameScreen']['stopwatchStartedAt'].N,

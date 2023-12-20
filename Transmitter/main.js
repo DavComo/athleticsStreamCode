@@ -12,12 +12,15 @@ var schools = ["mis", "fis", "ais", "zis", "sgsm", "bis"];
 
 var dynamodb;
 var dynamoClient;
+var tableName;
 
 async function init() {  
     var inputs = document.getElementsByTagName("input")
     for (var i = 0; i < inputs.length; i++) {
         inputs[i].value = "Loading..."
     };
+    tableName = streamData.dbName;
+    document.getElementById("serverName").value = tableName;
     // Initialize AWS SDK and DynamoDB client
     AWS.config.update({
         region: streamData.awsRegion,
@@ -70,7 +73,7 @@ function initButtons() {
         document.getElementById("valueMs").value = hours + " h : " + minutes + " m : " + seconds%60 + " s : " + ms%1000 + " ms"
     };
 
-    //Connections View
+    /*//Connections View
     document.getElementById("viewConnections").onclick = function() {
         document.getElementById("connectionInfo").classList.remove("hidden");
         document.getElementById("blurrableElement").classList.add("blur");
@@ -79,7 +82,7 @@ function initButtons() {
     document.getElementById("closeConnections").onclick = function() {
         document.getElementById("connectionInfo").classList.add("hidden");
         document.getElementById("blurrableElement").classList.remove("blur");
-    }
+    }*/
 
 
     //Upload Data for all inputs
@@ -150,8 +153,8 @@ function initButtons() {
                 ":s": document.getElementById("showGame").checked,
                 ":t": document.getElementById("side_1-name-scores").value,
                 ":u": document.getElementById("side_2-name-scores").value,
-                ":v": document.getElementById("side_1-score").value,
-                ":w": document.getElementById("side_2-score").value,
+                ":v": parseInt(document.getElementById("side_1-score").value),
+                ":w": parseInt(document.getElementById("side_2-score").value),
                 ":x": document.getElementById("showStopwatch").checked
             },
             ReturnValues: "UPDATED_NEW"
@@ -170,10 +173,9 @@ function initButtons() {
 
 var dynamodb;
 var docDataTempTemp;
-var tableName;
 
 function fetchData() {
-    tableName = 'stream_' + streamData.streamId;
+    tableName = document.getElementById("serverName").value;
     const params = {
         TableName: tableName,
         // Add any other parameters as needed
@@ -182,6 +184,7 @@ function fetchData() {
     dynamodb.scan(params, function(err, data) {
         if (err) {
             console.error("Error fetching data from DynamoDB:", err);
+            window.location.replace('http://localhost:5500/401.html')
         } else {
             // Update the UI with the fetched data
             docDataTempTemp = data.Items;
@@ -203,10 +206,10 @@ function updateData() {
     docData = {
         "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
         "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,
-        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].S,
-        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].S,
+        "team_1s" : docDataTemp['gameScreen']['sideOneScore'].N,
+        "team_2s" : docDataTemp['gameScreen']['sideTwoScore'].N,
         "gameName_1" : docDataTemp['gameScreen']['gameName'].S,
-        "hide_1" : docDataTemp['gameScreen']['showGame'].BOOL,
+        "hide_1" : docDataTemp['gameScreen']['showScore'].BOOL,
         "stopwatchms" : docDataTemp['gameScreen']['stopwatchValueMs'].N,
         "stopwatchrunning" : docDataTemp['gameScreen']['stopwatchRunning'].BOOL,
         "startedAt" : docDataTemp['gameScreen']['stopwatchStartedAt'].N,
