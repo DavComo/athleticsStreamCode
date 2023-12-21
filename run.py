@@ -23,7 +23,7 @@ print("->  Access the transmitter at http://localhost:5500/Transmitter/main.html
 
 print("Renderer page index:")
 for page in webpageIndex:
-    print("->  Access the " + page + "page at http://localhost:5500" + webpageIndex[page])
+    print("->  Access the " + page + " page at http://localhost:5500" + webpageIndex[page])
 print(f"Rendering for database: \'{jsonObj['dbName']}\'\n")
 
 print(f"Access Key: {jsonObj['accessKey']}")
