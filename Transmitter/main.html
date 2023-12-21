@@ -133,136 +133,8 @@
                 <!-- Color Setter page -->
                 <li id="colorPage" class="is-active">
                     <div class="block-container">
-                        <div class="block-body">
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">MIS Colors</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Primary</span>
-                                        <input type="text" class="input texts t1" id="misPrimary">
-                                        <div class="color-picker" id="misPrimaryColor"></div>
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Secondary</span>
-                                        <input type="text" class="input texts t1" id="misSecondary">
-                                        <div class="color-picker" id="misSecondaryColor"></div>
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">FIS Colors</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Primary</span>
-                                        <input type="text" class="input texts t1" id="fisPrimary">
-                                        <div class="color-picker" id="fisPrimaryColor"></div>
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Secondary</span>
-                                        <input type="text" class="input texts t1" id="fisSecondary">
-                                        <div class="color-picker" id="fisSecondaryColor"></div>
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">AIS Colors</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Primary</span>
-                                        <input type="text" class="input texts t1" id="aisPrimary">
-                                        <div class="color-picker" id="aisPrimaryColor"></div>
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Secondary</span>
-                                        <input type="text" class="input texts t1" id="aisSecondary">
-                                        <div class="color-picker" id="aisSecondaryColor"></div>
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">ZIS Colors</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Primary</span>
-                                        <input type="text" class="input texts t1" id="zisPrimary">
-                                        <div class="color-picker" id="zisPrimaryColor"></div>
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Secondary</span>
-                                        <input type="text" class="input texts t1" id="zisSecondary">
-                                        <div class="color-picker" id="zisSecondaryColor"></div>
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">SGSM Colors</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Primary</span>
-                                        <input type="text" class="input texts t1" id="sgsmPrimary">
-                                        <div class="color-picker" id="sgsmPrimaryColor"></div>
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Secondary</span>
-                                        <input type="text" class="input texts t1" id="sgsmSecondary">
-                                        <div class="color-picker" id="sgsmSecondaryColor"></div>
-                                    </div>
-                                </dd>
-                            </dl>
-
-                            <hr class="formRowSep">
-
-                            <dl class="formRow formRow--input">
-                                <dt>
-                                    <div class="formRow-labelWrapper">
-                                        <label class="formRow-label">BIS Colors</label>
-                                    </div>
-                                </dt>
-                                <dd>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Primary</span>
-                                        <input type="text" class="input texts t1" id="bisPrimary">
-                                        <div class="color-picker" id="bisPrimaryColor"></div>
-                                    </div>
-                                    <div class="inputGroup inputGroup--joined">
-                                        <span class="inputGroup-text">Secondary</span>
-                                        <input type="text" class="input texts t1" id="bisSecondary">
-                                        <div class="color-picker" id="bisSecondaryColor"></div>
-                                    </div>
-                                </dd>
-                            </dl>
+                        <div class="block-body" id="colorDiv">
+                            
                         </div>
                     </div>
                 </li>
@@ -411,6 +283,21 @@
                                 <dd>
                                     <div class="inputGroup inputGroup--joined">
                                         <input type="text" class="input texts t1" id="periodInterval">
+                                    </div>
+                                </dd>
+                            </dl>
+
+                            <hr class="formRowSep">
+
+                            <dl class="formRow formRow--input">
+                                <dt style="padding-top: 22px;">
+                                    <div class="formRow-labelWrapper">
+                                        <label class="formRow-label">Period Marker</label>
+                                    </div>
+                                </dt>
+                                <dd>
+                                    <div class="inputGroup inputGroup--joined">
+                                        <input type="text" class="input texts t1" id="periodMark">
                                     </div>
                                 </dd>
                             </dl>

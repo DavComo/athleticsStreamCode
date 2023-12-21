@@ -12,51 +12,60 @@ document.getElementsByTagName('head')[0].appendChild(script);
 
 })(window, document, undefined);
 
-var docData;
-function init() {
-    const firebaseConfig = {
-        apiKey: "AIzaSyBokVHaaTBGEAlExbksVjDTXm-Q3cFSoKw",
-        authDomain: "athleticsstream-bfe90.firebaseapp.com",
-        projectId: "athleticsstream-bfe90",
-        storageBucket: "athleticsstream-bfe90.appspot.com",
-        messagingSenderId: "260965419764",
-        appId: "1:260965419764:web:2ecac5005ae89c09006ca1",
-        databaseURL : "https://athleticsstream-bfe90-default-rtdb.europe-west1.firebasedatabase.app/"
+var dynamodb;
+var dynamoClient;
+var docDataTempTemp;
+
+function fetchData() {
+    const params = {
+        TableName: streamData.dbName,
     };
 
-    // Initialize Firebas
-    const app = initializeApp(firebaseConfig);
-
-
-    // Initialize Cloud Firestore and get a reference to the service
-    const dbRef = ref(getDatabase(app));
-
-    var db = getDatabase();
-
-    set(ref(db, 'football/clients/eventName'), true);
-
-    //const querySnapshot = await getDocs(collection(db, "footballData"));
-    //console.log(querySnapshot.docs[0].data()['testValue']);
-    onValue(child(dbRef, `football`), (snapshot) => {
-        const clientRef = ref(db, "football/clients/eventName");
-        onDisconnect(clientRef).set(false);
-        set(ref(db, 'football/clients/eventName'), true);
-        docData = snapshot.val();
-        localStorage.setItem("docData", JSON.stringify(docData));
-        updateData()
+    dynamodb.scan(params, function(err, data) {
+        if (err) {
+            console.error("Error fetching data from DynamoDB:", err);
+            if (err.code == "AccessDeniedException") {
+                window.location.replace('http://localhost:5500/401.html')
+            }
+        } else {
+            // Update the UI with the fetched data
+            docDataTempTemp = data.Items;
+            updateData()
+        }
     });
+}
+
+function init() {
+    // Initialize AWS SDK and DynamoDB client
+    AWS.config.update({
+        region: streamData.awsRegion,
+        accessKeyId: streamData.accessKey,
+        secretAccessKey: streamData.secretKey
+    });
+
+    dynamodb = new AWS.DynamoDB();
+    dynamoClient = new AWS.DynamoDB.DocumentClient();
+    fetchData();
 };
 
 
+var docData = {};
+var docDataTemp = {};
+var colors;
 
 var currentScene;
 var currentStatus;
 //Update Data (Source js + refactoring)
-function updateData() {
+async function updateData() {
+    for (var index = 0; index < docDataTempTemp.length; index++) {
+        var indexkey = docDataTempTemp[index].valueId.S;
+        docDataTemp[indexkey] = docDataTempTemp[index];
+    }
+
     docData = {
-        "eventName_1" : docData["eventClassifier"]['eventName'],
-        "eventScene_1" : docData["eventClassifier"]['eventScene'],
-        "showEvent" : docData["eventClassifier"]["showEvent"]
+        "eventName_1" : docDataTemp['eventClassifier']['eventName'].S,
+        "eventScene_1" : docDataTemp['eventClassifier']['eventScene'].S,
+        "showEvent" : docDataTemp['eventClassifier']['showEvent'].BOOL,
     }
 
     if ($('#eventName_1').text() != docData['eventName_1'] && docData["showEvent"] == true)
@@ -94,6 +103,8 @@ function updateData() {
     }
 
     updateEvent()
+    await sleep(1000)
+    fetchData()
 }
 
 

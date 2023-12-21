@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebas
 import { getDatabase, ref, onValue, child, get, set } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
 
 var docData = null;
-var schools = ["mis", "fis", "ais", "zis", "sgsm", "bis"];
+var schools = [];
 
 (function(window, document, undefined) {
 
@@ -24,8 +24,8 @@ async function init() {
     // Initialize AWS SDK and DynamoDB client
     AWS.config.update({
         region: streamData.awsRegion,
-        accessKeyId: streamData.awsAccessKey,
-        secretAccessKey: streamData.awsSecretKey
+        accessKeyId: streamData.accessKey,
+        secretAccessKey: streamData.secretKey
     });
 
     dynamodb = new AWS.DynamoDB();
@@ -147,7 +147,7 @@ function initButtons() {
             Key: {
               "valueId": "gameScreen"
             },
-            UpdateExpression: ("set gameName = :r, showGame = :s, sideOneName = :t, sideTwoName = :u, sideOneScore = :v, sideTwoScore = :w, showStopwatch = :x, periodIntervalSeconds = :y"),
+            UpdateExpression: ("set gameName = :r, showGame = :s, sideOneName = :t, sideTwoName = :u, sideOneScore = :v, sideTwoScore = :w, showStopwatch = :x, periodIntervalSeconds = :y, periodMark = :z"),
             ExpressionAttributeValues: {
                 ":r": document.getElementById("gameName").value,
                 ":s": document.getElementById("showGame").checked,
@@ -156,7 +156,8 @@ function initButtons() {
                 ":v": parseInt(document.getElementById("side_1-score").value),
                 ":w": parseInt(document.getElementById("side_2-score").value),
                 ":x": document.getElementById("showStopwatch").checked,
-                ":y": parseInt(document.getElementById("periodInterval").value)
+                ":y": parseInt(document.getElementById("periodInterval").value),
+                ":z": document.getElementById("periodMark").value
             },
             ReturnValues: "UPDATED_NEW"
           };
@@ -175,7 +176,7 @@ function initButtons() {
 var dynamodb;
 var docDataTempTemp;
 var docDataTemp = {};
-var colors;
+var colors = {};
 var docData = {}
 
 function fetchData() {
@@ -190,7 +191,7 @@ function fetchData() {
             console.error("Error fetching data from DynamoDB:", err);
             if (err.code == "AccessDeniedException") {
                 document.getElementById('serverStatus').style.color = "red"
-                document.getElementById('serverStatus').innerText = "Access Denied"
+                document.getElementById('serverStatus').innerText = "Access Denied/Doesn't Exist"
             }
         } else {
             // Update the UI with the fetched data
@@ -222,22 +223,77 @@ function updateData() {
         "eventName" : docDataTemp['eventClassifier']['eventName'].S,
         "eventScene" : docDataTemp['eventClassifier']['eventScene'].S,
         "showEvent" : docDataTemp['eventClassifier']['showEvent'].BOOL,
-        "periodIntervalSeconds" : docDataTemp['gameScreen']['periodIntervalSeconds'].N
+        "periodIntervalSeconds" : docDataTemp['gameScreen']['periodIntervalSeconds'].N,
+        "periodMark" : docDataTemp['gameScreen']['periodMark'].S,
     }
 
-    colors = {
-        'mis_primary' : docDataTemp['primaryColors']['mis'].S,
-        'mis_secondary' : docDataTemp['secondaryColors']['mis'].S,
-        'ais_primary' : docDataTemp['primaryColors']['ais'].S,
-        'ais_secondary' : docDataTemp['secondaryColors']['ais'].S,
-        'fis_primary' : docDataTemp['primaryColors']['fis'].S,
-        'fis_secondary' : docDataTemp['secondaryColors']['fis'].S,
-        'zis_primary' : docDataTemp['primaryColors']['zis'].S,
-        'zis_secondary' : docDataTemp['secondaryColors']['zis'].S,
-        'sgsm_primary' : docDataTemp['primaryColors']['sgsm'].S,
-        'sgsm_secondary' : docDataTemp['secondaryColors']['sgsm'].S,
-        'bis_primary' : docDataTemp['primaryColors']['bis'].S,
-        'bis_secondary' : docDataTemp['secondaryColors']['bis'].S,
+    for (var i = 0; i < Object.keys(docDataTemp['primaryColors']).length; i++) {
+        var schoolCode = Object.keys(docDataTemp['primaryColors'])[i];
+        var colorDiv = document.getElementById("colorDiv");
+        if (schoolCode != "valueId") {
+            schools.push(schoolCode);
+            colors[schoolCode + "_primary"] = docDataTemp['primaryColors'][schoolCode].S;
+            colors[schoolCode + "_secondary"] = docDataTemp['secondaryColors'][schoolCode].S;
+
+            var schoolDiv = document.createElement("dl");
+            schoolDiv.classList.add("formRow","formRow--input");
+            var schoolName_0 = document.createElement("dt");
+            var schoolName_1 = document.createElement("div");
+            schoolName_1.classList.add("formRow-labelWrapper");
+            var schoolName_2 = document.createElement("label");
+            schoolName_2.classList.add("formRow-label");
+            schoolName_2.innerText = schoolCode.toUpperCase() + " Colors";
+
+            schoolName_1.appendChild(schoolName_2);
+            schoolName_0.appendChild(schoolName_1);
+
+            var schoolDd = document.createElement("dd");
+            var primaryDiv = document.createElement("div");
+            primaryDiv.classList.add("inputGroup", "inputGroup--joined");
+            var spanDiv = document.createElement("span");
+            spanDiv.classList.add("inputGroup-text");
+            spanDiv.innerText = "Primary";
+            var inputDiv = document.createElement("input");
+            inputDiv.type = "text";
+            inputDiv.classList.add("input", "texts", "t1");
+            inputDiv.id = schoolCode + "Primary";
+            var exampleDiv = document.createElement("div");
+            exampleDiv.classList.add("color-picker");
+            exampleDiv.id = schoolCode + "PrimaryColor";
+
+            primaryDiv.appendChild(spanDiv);
+            primaryDiv.appendChild(inputDiv);
+            primaryDiv.appendChild(exampleDiv);
+
+            var secondaryDiv = document.createElement("div");
+            secondaryDiv.classList.add("inputGroup", "inputGroup--joined");
+            var secondaryspanDiv = document.createElement("span");
+            secondaryspanDiv.classList.add("inputGroup-text");
+            secondaryspanDiv.innerText = "Secondary";
+            var secondaryinputDiv = document.createElement("input");
+            secondaryinputDiv.type = "text";
+            secondaryinputDiv.classList.add("input", "texts", "t1");
+            secondaryinputDiv.id = schoolCode + "Secondary";
+            var secondaryexampleDiv = document.createElement("div");
+            secondaryexampleDiv.classList.add("color-picker");
+            secondaryexampleDiv.id = schoolCode + "SecondaryColor";
+
+            secondaryDiv.appendChild(secondaryspanDiv);
+            secondaryDiv.appendChild(secondaryinputDiv);
+            secondaryDiv.appendChild(secondaryexampleDiv);
+
+            schoolDd.appendChild(primaryDiv);
+            schoolDd.appendChild(secondaryDiv);
+
+            schoolDiv.appendChild(schoolName_0);
+            schoolDiv.appendChild(schoolDd);
+
+            colorDiv.appendChild(schoolDiv);
+
+            var separator = document.createElement("hr");
+            separator.classList.add("formRowSep");
+            colorDiv.appendChild(separator);
+        }
     }
 
     //Color Page
@@ -272,6 +328,7 @@ function updateData() {
         document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 000 ms"
     }
     document.getElementById("periodInterval").value = docData["periodIntervalSeconds"];
+    document.getElementById("periodMark").value = docData["periodMark"];
     document.getElementById("showStopwatch").checked = docData["showStopwatch"];
 
     initStopwatch();
@@ -280,7 +337,7 @@ function updateData() {
 
 var stopwatchStarted;
 var startOfStopwatch;
-var addedTime = "notInitialized";
+var addedTime = 0;
 
 function initStopwatch() {
     stopwatchStarted = docData["stopwatchrunning"];
@@ -289,6 +346,12 @@ function initStopwatch() {
     if (stopwatchStarted) {
         document.getElementById("startAndStop").innerText = 'Stop';
     }
+
+    var ms = docData["stopwatchms"]
+    let seconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
 
     document.getElementById("startAndStop").onclick = function() {
         if (stopwatchStarted == true) {
@@ -343,6 +406,7 @@ function initStopwatch() {
     updateStopwatch();
 
     document.getElementById("reset").onclick = function() {
+        addedTime = 0;
         startOfStopwatch = Date.now();
         document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 000 ms"
 
@@ -364,13 +428,20 @@ function initStopwatch() {
     }
 }
 
+var timeoutInterval = 0;
+
 async function updateStopwatch() {
+    if (document.getElementById("valueMs").value == "") {
+        document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 000 ms"
+    }
+
     while (stopwatchStarted) {
+        timeoutInterval--;
         var ms = (Date.now() - startOfStopwatch) + addedTime;
         let seconds = Math.floor(ms / 1000);
         let minutes = Math.floor(seconds / 60);
         let hours = Math.floor(minutes / 60);
-        if (seconds == parseInt(docData["periodIntervalSeconds"]) && ms % 1000 == 0) {
+        if (seconds % parseInt(document.getElementById('periodInterval').value) == 0 && ms % 1000 <= 10 && timeoutInterval <= 0 && seconds != 0) {
             stopwatchStarted = false;
             document.getElementById("startAndStop").innerText = 'Start';
             var params = {
@@ -389,8 +460,8 @@ async function updateStopwatch() {
               };
               
             dynamoClient.update(params, function(err, data) {});
-            ms += 1;
             document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
+            timeoutInterval = 50;
         } else {
             document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
         }

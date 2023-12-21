@@ -5,16 +5,8 @@ var script = document.createElement('script');
 script.src = 'https://code.jquery.com/jquery-3.6.3.min.js'; // Check https://jquery.com/ for the current version
 document.getElementsByTagName('head')[0].appendChild(script);
 
-var schoolPseudonyms = [
-    ['MIS', 'Munich'],
-    ['FIS', 'Frankfurt'],
-    ['AIS', 'Vienna'],
-    ['ZIS', 'Zurich'],
-    ['BUD', 'Budapest'],
-    ['ISB', 'Brussels'],
-    ['SGSM', 'St Georges'],
-    ['BIS', 'Bavarian']
-];
+
+var schools = [];
 
 //Initiate Data
 (function(window, document, undefined) {
@@ -50,8 +42,8 @@ function init() {
     // Initialize AWS SDK and DynamoDB client
     AWS.config.update({
         region: streamData.awsRegion,
-        accessKeyId: streamData.awsAccessKey,
-        secretAccessKey: streamData.awsSecretKey
+        accessKeyId: streamData.accessKey,
+        secretAccessKey: streamData.secretKey
     });
 
     dynamodb = new AWS.DynamoDB();
@@ -93,7 +85,7 @@ function init() {
 
 var docData = {};
 var docDataTemp = {};
-var colors;
+var colors = {};
 //Update Data (Source js + refactoring)
 async function updateData() {
     
@@ -116,22 +108,17 @@ async function updateData() {
         "stopwatchms" : docDataTemp['gameScreen']['stopwatchValueMs'].N,
         "stopwatchrunning" : docDataTemp['gameScreen']['stopwatchRunning'].BOOL,
         "startedAt" : docDataTemp['gameScreen']['stopwatchStartedAt'].N,
-        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch'].BOOL
+        "showStopwatch" : docDataTemp['gameScreen']['showStopwatch'].BOOL,
+        "periodMark" : docDataTemp['gameScreen']['periodMark'].S
     }
 
-    colors = {
-        'mis_primary' : docDataTemp['primaryColors']['mis'].S,
-        'mis_secondary' : docDataTemp['secondaryColors']['mis'].S,
-        'ais_primary' : docDataTemp['primaryColors']['ais'].S,
-        'ais_secondary' : docDataTemp['secondaryColors']['ais'].S,
-        'fis_primary' : docDataTemp['primaryColors']['fis'].S,
-        'fis_secondary' : docDataTemp['secondaryColors']['fis'].S,
-        'zis_primary' : docDataTemp['primaryColors']['zis'].S,
-        'zis_secondary' : docDataTemp['secondaryColors']['zis'].S,
-        'sgsm_primary' : docDataTemp['primaryColors']['sgsm'].S,
-        'sgsm_secondary' : docDataTemp['secondaryColors']['sgsm'].S,
-        'bis_primary' : docDataTemp['primaryColors']['bis'].S,
-        'bis_secondary' : docDataTemp['secondaryColors']['bis'].S,
+    for (var i = 0; i < Object.keys(docDataTemp['primaryColors']).length; i++) {
+        var schoolCode = Object.keys(docDataTemp['primaryColors'])[i];
+        if (schoolCode != "valueId") {
+            schools.push(schoolCode);
+            colors[schoolCode + "_primary"] = docDataTemp['primaryColors'][schoolCode].S;
+            colors[schoolCode + "_secondary"] = docDataTemp['secondaryColors'][schoolCode].S;
+        }
     }
 
     updateStopwatch(docData);
@@ -268,12 +255,6 @@ function updateSpecific(htmlelem, docelem) {
 
 function updateIcon(htmlelem, schoolName) {
     return function(next) {
-        for (var i = 0; i < schoolPseudonyms.length; i++) {
-            if (schoolPseudonyms[i].includes(schoolName)) {
-                schoolName = schoolPseudonyms[i][0]
-            }
-        }
-
         $('#' + htmlelem).attr('src', './' + schoolName + '_Logo-200x200.png');
         next();
     }
@@ -283,13 +264,6 @@ function updateColors() {
     return function(next) {
         var schoolName_left = docData['team_1'];
         var schoolName_right = docData['team_2'];
-        for (var i = 0; i < schoolPseudonyms.length; i++) {
-            if (schoolPseudonyms[i].includes(schoolName_left)) {
-                schoolName_left = schoolPseudonyms[i][0]
-            } else if (schoolPseudonyms[i].includes(schoolName_right)) {
-                schoolName_right = schoolPseudonyms[i][0]
-            }
-        }
         //Left side first
         $('#score-block-left').css('background-color', colors[schoolName_left.toLowerCase() + '_secondary']);
         $('#team_1').css('color', colors[schoolName_left.toLowerCase() + '_secondary']);
@@ -306,16 +280,18 @@ function updateColors() {
 
 /*Deprecated, view stopwatch.js for updated version*/
 async function updateStopwatch() {
+    document.getElementById('halfid').innerHTML = docData['periodMark'];
+
     if (docData['stopwatchrunning'] == false) {
-        var timeinms = docData['stopwatchms'];
-        var seconds = Math.round(timeinms / 1000) % 60;
-        var minutes = Math.round(timeinms / 60000) % 60;
+        var timeinms = parseInt(docData['stopwatchms']) + 5;
+        var seconds = Math.floor(timeinms / 1000) % 60;
+        var minutes = Math.floor(timeinms / 60000) % 60;
         $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));
     } else {
         while (docData['stopwatchrunning'] == true) {
             var timeinms = Date.now() - docData['startedAt'];
-            var minutes = Math.floor(timeinms / 59999);
-            var seconds = ((timeinms % 59999) / 1000).toFixed(0);
+            var seconds = Math.floor(timeinms / 1000) % 60;
+            var minutes = Math.floor(timeinms / 60000) % 60;
             $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));
             await sleep(10)
         }
