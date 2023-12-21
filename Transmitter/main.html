@@ -118,15 +118,13 @@
                         </span>
                     </span>
                 </div>
-                <input class="tabs-tab" style="margin-right: 10px; margin-left: auto; margin-top: auto; margin-bottom: auto;" id="serverName">
-                <!--<button class="button--primary button button--icon" style="width:fit-content; margin-left: 0; margin-bottom: auto; margin-right: 10px; background-color:#1E6FB3; border-color: #1E6FB3; margin-top: auto; height: 30px;"  id="viewConnections">
-                    <span>
-                        View Connections
-                    </span>
-                </button>-->
+                <span class="tabs-tab noHover" style="margin-right: 10px; margin-left: auto; margin-top: auto; margin-bottom: auto;" id="serverStatus">
+                    
+                </span>
+                <input class="tabs-tab" style="margin-right: 10px; margin-left: 0px; margin-top: auto; margin-bottom: auto;" id="serverName">
                 <button class="button--primary button button--icon" style="width:fit-content; margin-bottom: auto; margin-right: 5px; background-color:#1E6FB3; border-color: #1E6FB3; margin-top: auto; height: 30px;"  id="resetValues">
                     <span>
-                        Reset Values
+                        Sync/Reset Values
                     </span>
                 </button>
             </div>
@@ -398,6 +396,21 @@
                                         <button type="button" class="start button" id="startAndStop">Start</button>
                                         <span class="inputGroup-splitter"></span>
                                         <button type="button" class="reset button" id="reset">Reset</button>
+                                    </div>
+                                </dd>
+                            </dl>
+
+                            <hr class="formRowSep">
+
+                            <dl class="formRow formRow--input">
+                                <dt style="padding-top: 22px;">
+                                    <div class="formRow-labelWrapper">
+                                        <label class="formRow-label">Period Interval (Seconds)</label>
+                                    </div>
+                                </dt>
+                                <dd>
+                                    <div class="inputGroup inputGroup--joined">
+                                        <input type="text" class="input texts t1" id="periodInterval">
                                     </div>
                                 </dd>
                             </dl>

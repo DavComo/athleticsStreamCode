@@ -62,10 +62,10 @@ function initButtons() {
     initNavBar();
 
     //Init Reset Value Button
-    document.getElementById("resetValues").onclick = function() {
-        updateData();
+    document.getElementById("resetValues").onclick = async function() {
+        await fetchData();
 
-        var ms = docData['gameScreen']['stopwatch']['valueMs'];
+        var ms = docData["stopwatchms"];
         let seconds = Math.floor(ms / 1000);
         let minutes = Math.floor(seconds / 60);
         let hours = Math.floor(minutes / 60);
@@ -147,7 +147,7 @@ function initButtons() {
             Key: {
               "valueId": "gameScreen"
             },
-            UpdateExpression: ("set gameName = :r, showGame = :s, sideOneName = :t, sideTwoName = :u, sideOneScore = :v, sideTwoScore = :w, showStopwatch = :x"),
+            UpdateExpression: ("set gameName = :r, showGame = :s, sideOneName = :t, sideTwoName = :u, sideOneScore = :v, sideTwoScore = :w, showStopwatch = :x, periodIntervalSeconds = :y"),
             ExpressionAttributeValues: {
                 ":r": document.getElementById("gameName").value,
                 ":s": document.getElementById("showGame").checked,
@@ -155,7 +155,8 @@ function initButtons() {
                 ":u": document.getElementById("side_2-name-scores").value,
                 ":v": parseInt(document.getElementById("side_1-score").value),
                 ":w": parseInt(document.getElementById("side_2-score").value),
-                ":x": document.getElementById("showStopwatch").checked
+                ":x": document.getElementById("showStopwatch").checked,
+                ":y": parseInt(document.getElementById("periodInterval").value)
             },
             ReturnValues: "UPDATED_NEW"
           };
@@ -173,6 +174,9 @@ function initButtons() {
 
 var dynamodb;
 var docDataTempTemp;
+var docDataTemp = {};
+var colors;
+var docData = {}
 
 function fetchData() {
     tableName = document.getElementById("serverName").value;
@@ -185,26 +189,25 @@ function fetchData() {
         if (err) {
             console.error("Error fetching data from DynamoDB:", err);
             if (err.code == "AccessDeniedException") {
-                window.location.replace('http://localhost:5500/401.html')
+                document.getElementById('serverStatus').style.color = "red"
+                document.getElementById('serverStatus').innerText = "Access Denied"
             }
         } else {
             // Update the UI with the fetched data
+            document.getElementById('serverStatus').style.color = "green"
+            document.getElementById('serverStatus').innerText = "Connected to " + tableName
             docDataTempTemp = data.Items;
+            for (var index = 0; index < docDataTempTemp.length; index++) {
+                var indexkey = docDataTempTemp[index].valueId.S;
+                docDataTemp[indexkey] = docDataTempTemp[index];
+            }
             updateData()
         }
+        return "done";
     });
 }
 
-var docDataTemp = {};
-var colors;
-var docData = {}
 function updateData() {
-    for (var index = 0; index < docDataTempTemp.length; index++) {
-        var indexkey = docDataTempTemp[index].valueId.S;
-        docDataTemp[indexkey] = docDataTempTemp[index];
-    }
-
-
     docData = {
         "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
         "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,
@@ -219,6 +222,7 @@ function updateData() {
         "eventName" : docDataTemp['eventClassifier']['eventName'].S,
         "eventScene" : docDataTemp['eventClassifier']['eventScene'].S,
         "showEvent" : docDataTemp['eventClassifier']['showEvent'].BOOL,
+        "periodIntervalSeconds" : docDataTemp['gameScreen']['periodIntervalSeconds'].N
     }
 
     colors = {
@@ -267,6 +271,7 @@ function updateData() {
     if (document.getElementById("valueMs").value == "Loading...") {
         document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 000 ms"
     }
+    document.getElementById("periodInterval").value = docData["periodIntervalSeconds"];
     document.getElementById("showStopwatch").checked = docData["showStopwatch"];
 
     initStopwatch();
@@ -365,7 +370,30 @@ async function updateStopwatch() {
         let seconds = Math.floor(ms / 1000);
         let minutes = Math.floor(seconds / 60);
         let hours = Math.floor(minutes / 60);
-        document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
+        if (seconds == parseInt(docData["periodIntervalSeconds"]) && ms % 1000 == 0) {
+            stopwatchStarted = false;
+            document.getElementById("startAndStop").innerText = 'Start';
+            var params = {
+                TableName: tableName,
+                Key: {
+                  "valueId": "gameScreen"
+                },
+                UpdateExpression: "set stopwatchRunning = :r, stopwatchStartedAt = :s, stopwatchValueMs = :v",
+                ExpressionAttributeValues: {
+                    ":r": false,
+                    ":s": startOfStopwatch - addedTime,
+                    ":v": timeStringToMs(document.getElementById("valueMs").value)
+
+                },
+                ReturnValues: "UPDATED_NEW"
+              };
+              
+            dynamoClient.update(params, function(err, data) {});
+            ms += 1;
+            document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
+        } else {
+            document.getElementById("valueMs").value = hours + " h : " + minutes%60 + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
+        }
         await sleep(1);
     }
     if (stopwatchStarted == false) {

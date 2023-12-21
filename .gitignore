@@ -1,3 +1,5 @@
 /.vscode
 /.DS_Store
 /streamData.js
+/dynamodbApply.js
+/dynamodbApply.html

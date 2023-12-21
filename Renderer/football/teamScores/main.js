@@ -308,14 +308,14 @@ function updateColors() {
 async function updateStopwatch() {
     if (docData['stopwatchrunning'] == false) {
         var timeinms = docData['stopwatchms'];
-        var minutes = Math.floor(timeinms / 60000);
-        var seconds = ((timeinms % 60000) / 1000).toFixed(0);
+        var seconds = Math.round(timeinms / 1000) % 60;
+        var minutes = Math.round(timeinms / 60000) % 60;
         $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));
     } else {
         while (docData['stopwatchrunning'] == true) {
             var timeinms = Date.now() - docData['startedAt'];
-            var minutes = Math.floor(timeinms / 60000);
-            var seconds = ((timeinms % 60000) / 1000).toFixed(0);
+            var minutes = Math.floor(timeinms / 59999);
+            var seconds = ((timeinms % 59999) / 1000).toFixed(0);
             $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));
             await sleep(10)
         }
