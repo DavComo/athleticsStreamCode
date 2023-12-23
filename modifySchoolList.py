@@ -17,13 +17,13 @@ if os.path.exists("./.initialSetupDone.txt"):
                 acronym = input("Enter the acronym of the school you want to add (MIS, ZIS, etc.): ")
             else:
                 acronym = sys.argv[2]
-            """logoPath = input("Enter the absolute path to the logo of the school you want to add: ")
+            logoPath = input("Enter the absolute path to the logo of the school you want to add: ")
 
             if not os.path.exists(logoPath):
                 print("Invalid path to logo. Fix and try again.")
                 sys.exit(0)
             else:
-                os.system(f"cp {logoPath} ./CommonUse/{acronym}_Logo-200x200.png")"""
+                os.system(f"cp {logoPath} ./CommonUse/{acronym}_Logo-200x200.png")
 
             try:
                 if not os.path.exists("streamData.js"):
@@ -93,6 +93,9 @@ if os.path.exists("./.initialSetupDone.txt"):
 
                     except ClientError as e:
                         print(f"An error occurred with {db_name}: ", e.response['Error']['Message'])
+
+
+                        
         elif sys.argv[1].lower() == 'remove':
             print("Warning: School logo will be permanently deleted from the CommonUse folder.\n")
 
