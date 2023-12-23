@@ -1,6 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-import { getDatabase, ref, onValue, child, get, set } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
-
 var docData = null;
 var schools = [];
 
@@ -63,6 +60,7 @@ function initButtons() {
 
     //Init Reset Value Button
     document.getElementById("resetValues").onclick = async function() {
+        document.getElementById('colorDiv').innerHTML = "";
         await fetchData();
 
         var ms = docData["stopwatchms"];
@@ -70,20 +68,8 @@ function initButtons() {
         let minutes = Math.floor(seconds / 60);
         let hours = Math.floor(minutes / 60);
 
-        document.getElementById("valueMs").value = hours + " h : " + minutes + " m : " + seconds%60 + " s : " + ms%1000 + " ms"
+        document.getElementById("valueMs").value = hours + " h : " + minutes + " m : " + seconds%60 + " s : " + String(ms%1000).padStart(3, '0') + " ms"
     };
-
-    /*//Connections View
-    document.getElementById("viewConnections").onclick = function() {
-        document.getElementById("connectionInfo").classList.remove("hidden");
-        document.getElementById("blurrableElement").classList.add("blur");
-    }
-
-    document.getElementById("closeConnections").onclick = function() {
-        document.getElementById("connectionInfo").classList.add("hidden");
-        document.getElementById("blurrableElement").classList.remove("blur");
-    }*/
-
 
     //Upload Data for all inputs
     document.getElementById("saveValues").onclick = async function() {
@@ -183,7 +169,6 @@ function fetchData() {
     tableName = document.getElementById("serverName").value;
     const params = {
         TableName: tableName,
-        // Add any other parameters as needed
     };
 
     dynamodb.scan(params, function(err, data) {
@@ -192,6 +177,9 @@ function fetchData() {
             if (err.code == "AccessDeniedException") {
                 document.getElementById('serverStatus').style.color = "red"
                 document.getElementById('serverStatus').innerText = "Access Denied/Doesn't Exist"
+            } else if (err.code == "ValidationException") {
+                document.getElementById('serverStatus').style.color = "red"
+                document.getElementById('serverStatus').innerText = "Enter Database ID and Sync"
             }
         } else {
             // Update the UI with the fetched data
@@ -323,7 +311,6 @@ function updateData() {
     document.getElementById("showGame").checked = docData["hide_1"];
 
     //Stopwatch
-    //Rest of code in stopwatch.js file
     if (document.getElementById("valueMs").value == "Loading...") {
         document.getElementById("valueMs").value = "0 h : 0 m : 0 s : 000 ms"
     }

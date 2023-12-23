@@ -1,11 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-import { getDatabase, ref, onValue, child, get, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
-
-var script = document.createElement('script');
-script.src = 'https://code.jquery.com/jquery-3.6.3.min.js'; // Check https://jquery.com/ for the current version
-document.getElementsByTagName('head')[0].appendChild(script);
-
-
 var schools = [];
 
 //Initiate Data
@@ -28,7 +20,9 @@ function fetchData() {
         if (err) {
             console.error("Error fetching data from DynamoDB:", err);
             if (err.code == "AccessDeniedException") {
-                window.location.replace('http://localhost:5500/401.html')
+                window.location.replace('http://localhost:5500/.401.html')
+            } else if (err.code == "ValidationException") {
+                window.location.replace('http://localhost:5500/.404.html')
             }
         } else {
             // Update the UI with the fetched data

@@ -25,7 +25,9 @@ function fetchData() {
         if (err) {
             console.error("Error fetching data from DynamoDB:", err);
             if (err.code == "AccessDeniedException") {
-                window.location.replace('http://localhost:5500/401.html')
+                window.location.replace('http://localhost:5500/.401.html')
+            } else if (err.code == "ValidationException") {
+                window.location.replace('http://localhost:5500/.404.html')
             }
         } else {
             // Update the UI with the fetched data
