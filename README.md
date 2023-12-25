@@ -1,11 +1,15 @@
-Documentation
+PlayVision™ Documentation
 =================
 
-## 1. Initial Setup
+## 1. First Time Setup
 
-In order to setup the broadcasting software, run the following command in terminal or command line:
+In order to setup your PlayVision™ software, navigate to your file directory with the 'cd' command. For example:
+```sh
+cd /Users/livestreamCodeFolder/
+```
+And then run the following command in terminal or command line to initialize the server:
 ```sh 
- python3 run.py
+python3 run.py
 ```
 During the setup, you will be asked for your AWS access and secret keys. You may leave them blank and then add them manually in the [streamData.js](./streamData.js) file, however it is not recommended to complete the setup this way.<br>
 
@@ -23,7 +27,20 @@ Once you have completed the initial setup, you can start the server with the sam
 Which will start the server like normally and open the control panel as well.
 <br><br>
 
-## 3. Switching Streams
+## 3. Switching Stream Databases
 
-The software allows for controlling multiple streams at once from one machine remotely, and there are two distinct ways to switch between streams depending on whether you want to switch the stream being rendered on a machine, or whether you want to switch which stream a contol panel is controlling. Currently, the software allows for rendering only one stream per machine.
+PlayVision™ software allows for controlling multiple streams at once from one machine remotely, and there are two distinct ways to switch between streams depending on whether you want to switch the stream being rendered on a machine, or whether you want to switch which stream your contol panel is controlling. 
 
+
+>#### Control Panel Switching
+>Switching the subject of a control panel instance is very easy. Just change the name of the database in the top right to one of your assigned databases (Syntax matters), and click on 'Sync/Reset Values'. 
+>![](./readme-images/panelSwitching.png)
+>Once the text in the top right says you are connected, you are good to go.<br><br>
+
+>#### Renderer Switching
+>Switching renderers isn't as simple as switching control panel since it isn't assumed you would need to switch database mid-stream. <br>
+>To switch renderer database, go to your [streamData.js](./streamData.js) file and change the value of `dbName` to one of your assigned databases. Then, start or restart the broadcasting server and your new stream should be assgined to your chosen database.<br><br>
+
+<br>
+
+## 4. Troubleshooting
