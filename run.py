@@ -65,7 +65,7 @@ def main():
         obj = data[data.find('{') : data.rfind('}')+1]
         jsonObj = json.loads(obj)
 
-    print("->  Access the transmitter at http://localhost:5500/Transmitter/main.html\n")
+    print("->  Access the control panel at http://localhost:5500/Transmitter/main.html\n")
 
     print("Renderer page index:")
     for page in webpageIndex:
