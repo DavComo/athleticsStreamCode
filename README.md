@@ -39,8 +39,28 @@ PlayVision™ software allows for controlling multiple streams at once from one 
 
 >#### Renderer Switching
 >Switching renderers isn't as simple as switching control panel since it isn't assumed you would need to switch database mid-stream, but it still is far from complicated. <br>
->To switch renderer database, go to your [streamData.js](./streamData.js) file and change the value of `dbName` to one of your assigned databases. Then, start or restart the broadcasting server and your new stream should be assgined to your chosen database.<br><br>
+>To switch renderer database, go to your [streamData.js](./streamData.js) file and change the value of `dbName` to one of your assigned databases. Then, start or restart the broadcasting server and your new stream should be attached to your chosen database.<br><br>
 
 <br>
 
-## 4. Troubleshooting
+## 4. Add/Remove Custom School
+Once the initial setup has been completed, you can add or remove any custom school or use the preloaded ones. In order to add or remove custom schools, run the following command in terminal or command line:
+```sh
+python3 modifySchoolList.py {add/remove}
+```
+When running the command, ignore the curly brackets and pick either the add or remove keyword based on what you would like to do.
+<br><br>
+
+#### Adding
+If you are adding a new school, follow the instructions of the program and when prompted for the path of the logo for the school you want, it's important to ensure the picture is exactly 200 by 200 pixels in size and that you enter the absolute path of the image in your system (Starting with for example C:/ on Windows and /Users on MacOS). After you have entered, if your [streamData.js](./streamData.js) is valid and existant, you will be asked to provide the names of all the databases you want to add the school to. Enter these comma separated, for example:
+`MIS-stream-1, MIS-stream_2, MIS-stream_3` <br>
+After all that, you should receive confirmation of each successfull change to the databases and able to seamlessly use your new custom school.
+<br><br>
+
+#### Removing
+To remove a school from the database use the 'remove' keyword when running the `modifySchoolList.py` file. Most steps will be similar to the steps used for adding schools and follow the same rules, for example, database names will need to be comma separated. If you want to know what schools each database has attached, check through the color view in the control panel for each database. <br>
+<font style='color: red; weight: 300px'>**Warning: Removing a school for ANY database will erase the corresponding picture therefore, without adding it back manually, it isn't possible to have only one database with a school and other not without some manual changes needed.**</font>
+
+<br><br>
+
+## Control Panel Basics
