@@ -133,7 +133,7 @@ function initButtons() {
             Key: {
               "valueId": "gameScreen"
             },
-            UpdateExpression: ("set gameName = :r, showGame = :s, sideOneName = :t, sideTwoName = :u, sideOneScore = :v, sideTwoScore = :w, showStopwatch = :x, periodIntervalSeconds = :y, periodMark = :z"),
+            UpdateExpression: ("set gameName = :r, showScore = :s, sideOneName = :t, sideTwoName = :u, sideOneScore = :v, sideTwoScore = :w, showStopwatch = :x, periodIntervalSeconds = :y, periodMark = :z"),
             ExpressionAttributeValues: {
                 ":r": document.getElementById("gameName").value,
                 ":s": document.getElementById("showGame").checked,

@@ -18,3 +18,6 @@
 
 .eventNameTop.hidden { top: -100 !important;}
 .eventNameBottom.hidden { bottom: -100 !important;}
+
+.slow { transition: all 0.50s ease-out; }
+.fast { transition: all 0.25s ease-in; }

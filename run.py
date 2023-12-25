@@ -4,14 +4,16 @@ import json
 import platform
 import webbrowser
 
-
+warningColor = '\033[93m'
+endColor = '\033[0m'
 
 def setupStreamData():
     accessKey = input("Enter your given access key (Leave blank to set up manually later): ")
     secretKey = input("Enter your given secret key (Leave black to set up manually later): ")
+    dbName = input("Enter your given database name (Leave blank to set up manually later): ")
 
     streamData = open("./streamData.js", "w")
-    streamData.write(f"var streamData = {{\n\t\"dbName\": \"\",\n\t\"accessKey\": \"{accessKey}\",\n\t\"secretKey\": \"{secretKey}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
+    streamData.write(f"var streamData = {{\n\t\"dbName\": \"{dbName}\",\n\t\"accessKey\": \"{accessKey}\",\n\t\"secretKey\": \"{secretKey}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
     streamData.close()
 
 def main():
@@ -70,10 +72,13 @@ def main():
     print("Renderer page index:")
     for page in webpageIndex:
         print("->  Access the " + page + " page at http://localhost:5500" + webpageIndex[page])
-    print(f"Rendering for database: \'{jsonObj['dbName']}\'\n")
+    if jsonObj['dbName'] != "":
+        print(f"Rendering for database: \'{jsonObj['dbName']}\'\n")
+    else:
+        print(warningColor + "Warning: No database name set. Please set in streamData.js" + endColor + "\n")
 
-    print(f"Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else 'Not set'}")
-    print(f"Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else 'Not set'}\n")
+    print(f"Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else (warningColor + 'Not set' + endColor)}")
+    print(f"Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else (warningColor + 'Not set' + endColor)}\n")
 
     print("Press Ctrl+C to stop the server\n")
     if len(sys.argv) > 1:

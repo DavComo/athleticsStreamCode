@@ -269,3 +269,6 @@ img {
 .card-container.slow.fast.hidden {
     clip-path: polygon(50% 0%, 50% 100%, 50% 100%, 50% 0%);
 }
+
+.slow { transition: all 0.50s ease-out; }
+.fast { transition: all 0.25s ease-in; }
