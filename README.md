@@ -25,4 +25,5 @@ Which will start the server like normally and open the control panel as well.
 
 ## 3. Switching Streams
 
-The software allows for controlling multiple streams at once from one machine remotely, and there are two distinct ways to switch between streams depending on whether you want to switch the stream being rendered on a machine, or whether you want to switch which stream a contol panel is controlling. Currently, the software allows for rendering only one stream per machine
+The software allows for controlling multiple streams at once from one machine remotely, and there are two distinct ways to switch between streams depending on whether you want to switch the stream being rendered on a machine, or whether you want to switch which stream a contol panel is controlling. Currently, the software allows for rendering only one stream per machine.
+
