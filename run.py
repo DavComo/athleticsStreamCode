@@ -2,21 +2,62 @@ import os
 import sys
 import json
 import platform
+import time
 import webbrowser
+import subprocess
 
-warningColor = '\033[93m'
+warningColor = '\033[91m'
+goodColor = '\033[92m'
 endColor = '\033[0m'
+webpageIndex = None
+jsonObj = None
+serverRunning = False
 
-def setupStreamData():
-    accessKey = input("Enter your given access key (Leave blank to set up manually later): ")
-    secretKey = input("Enter your given secret key (Leave black to set up manually later): ")
-    dbName = input("Enter your given database name (Leave blank to set up manually later): ")
 
-    streamData = open("./streamData.js", "w")
-    streamData.write(f"var streamData = {{\n\t\"dbName\": \"{dbName}\",\n\t\"accessKey\": \"{accessKey}\",\n\t\"secretKey\": \"{secretKey}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
-    streamData.close()
+
 
 def main():
+    global serverRunning
+    global jsonObj
+    global webpageIndex
+
+    def setupStreamData():
+        accessKey = input("Enter your given access key (Leave blank to set up manually later): ")
+        secretKey = input("Enter your given secret key (Leave black to set up manually later): ")
+        dbName = input("Enter your given database name (Leave blank to set up manually later): ")
+
+        streamData = open("./streamData.js", "w")
+        streamData.write(f"var streamData = {{\n\t\"dbName\": \"{dbName}\",\n\t\"accessKey\": \"{accessKey}\",\n\t\"secretKey\": \"{secretKey}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
+        streamData.close()
+
+    def printInfo():
+        print("->  Access the control panel at http://localhost:5500/Transmitter/main.html\n")
+
+        print("Renderer page index:")
+        for page in webpageIndex:
+            print("->  Access the " + page + " page at http://localhost:5500" + webpageIndex[page])
+        if jsonObj['dbName'] != "":
+            print(f"Rendering for database: \'{jsonObj['dbName']}\'\n")
+        else:
+            print(warningColor + "Warning: No database name set. Please set in streamData.js" + endColor + "\n")
+
+        print(f"Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else (warningColor + 'Not set' + endColor)}")
+        print(f"Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else (warningColor + 'Not set' + endColor)}\n")
+
+        print("Run the \'stop\' command to stop the server\n")
+        if len(sys.argv) > 1:
+            if (sys.argv[1].lower() == "gui"):
+                webbrowser.open("http://localhost:5500/Transmitter/main.html", new=1)
+        if not serverRunning:
+            print("\nStarting integrated command console. Type \'help\' for a list of commands.")
+        else:
+            print("\nIntegrated command console started. Type \'help\' for a list of commands.")
+        print("-"*80)
+
+
+
+
+
     if not os.path.exists("./.initialSetupDone.txt"):
         if platform.system() == "Windows":
             os.system("cls")
@@ -67,25 +108,81 @@ def main():
         obj = data[data.find('{') : data.rfind('}')+1]
         jsonObj = json.loads(obj)
 
-    print("->  Access the control panel at http://localhost:5500/Transmitter/main.html\n")
+    printInfo()
 
-    print("Renderer page index:")
-    for page in webpageIndex:
-        print("->  Access the " + page + " page at http://localhost:5500" + webpageIndex[page])
-    if jsonObj['dbName'] != "":
-        print(f"Rendering for database: \'{jsonObj['dbName']}\'\n")
-    else:
-        print(warningColor + "Warning: No database name set. Please set in streamData.js" + endColor + "\n")
+    serverStartCommand = "python3 -m http.server 5500"
+    server = subprocess.Popen(serverStartCommand.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    serverRunning = True
 
-    print(f"Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else (warningColor + 'Not set' + endColor)}")
-    print(f"Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else (warningColor + 'Not set' + endColor)}\n")
-
-    print("Press Ctrl+C to stop the server\n")
-    if len(sys.argv) > 1:
-        if (sys.argv[1].lower() == "gui"):
+    while True:
+        if serverRunning:
+            command = input(goodColor + ">>> " + endColor)
+        else:
+            command = input(warningColor + ">>> " + endColor)
+        if command == "help":
+            print("  start: Starts the server")
+            print("  stop: Stops the server")
+            print("  help: Displays this help message")
+            print("  clear: Clears the console")
+            print("  updatedb <database name>: Updates the database name in streamData.js")
+            print("  info: Displays information about the current configuration")
+            print("  gui: Opens the control panel in your default browser")
+            print("  status: Displays the status of the server")
+        elif command == "start":
+            if not serverRunning:
+                server = subprocess.Popen(serverStartCommand.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                serverRunning = True
+                print(goodColor + "  Starting Server." + endColor)
+            else:
+                print("  Server is already running.")
+        elif command == "stop":
+            server.terminate()
+            print(warningColor + "  Stopping Server." + endColor)
+            serverRunning = False
+        elif command == "exit":
+            if serverRunning:
+                server.terminate()
+                print("  Stopping Server.")
+                serverRunning = False
+            print("  Exiting...")
+            exit()
+        elif command == "clear":
+            if platform.system() == "Windows":
+                os.system("cls")
+            elif platform.system() == "Linux" or platform.system() == "Darwin":
+                os.system("clear")
+            printInfo()
+        elif "updatedb" in command:
+            arguments = command.split()
+            if len(arguments) == 2:
+                dbName = arguments[1]
+                streamData = open("./streamData.js", "w")
+                streamData.write(f"var streamData = {{\n\t\"dbName\": \"{dbName}\",\n\t\"accessKey\": \"{jsonObj['accessKey']}\",\n\t\"secretKey\": \"{jsonObj['secretKey']}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
+                streamData.close()
+                print("  Database name updated. Reload sources in OBS to apply.")
+            else:
+                print("  Invalid number of arguments. Usage: updatedb <database name>")
+        elif command == "info":
+            with open('streamData.js') as dataFile:
+                data = dataFile.read()
+                obj = data[data.find('{') : data.rfind('}')+1]
+                jsonObj = json.loads(obj)
+            print("  Running PlayVision™ broadcasting software.\n")
+            print(f"  Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else (warningColor + 'Not set' + endColor)}")
+            print(f"  Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else (warningColor + 'Not set' + endColor)}")
+            print(f"  Database Name: {jsonObj['dbName'] if jsonObj['dbName'] != '' else (warningColor + 'Not set' + endColor)}")
+        elif command == "gui":
             webbrowser.open("http://localhost:5500/Transmitter/main.html", new=1)
-            
-    os.system("python3 -m http.server 5500")
+            print("  Opened control panel in browser.")
+        elif command == "status":
+            if serverRunning:
+                print(goodColor + "  Server is running." + endColor)
+            else:
+                print(warningColor + "  Server is not running." + endColor)
+        elif command == "":
+            pass
+        else:
+            print(f"  \'{command}\' is not a recognized command. Type \'help\' for a list of commands.")
 
 
 if __name__ == "__main__":
