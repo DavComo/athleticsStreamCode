@@ -4,12 +4,13 @@ import json
 import time
 import math
 import shutil
-import zipfile
+import psutil
 import platform
 import webbrowser
 import subprocess
 
 warningColor = '\033[91m'
+dangerColor = '\033[93m'
 goodColor = '\033[92m'
 endColor = '\033[0m'
 webpageIndex = None
@@ -211,6 +212,8 @@ def main():
             else:
                 print("  Invalid number of arguments. Usage: updatedb <database name>")
         elif command == "info":
+            cpuUsage = psutil.cpu_percent()
+
             with open('streamData.js') as dataFile:
                 data = dataFile.read()
                 obj = data[data.find('{') : data.rfind('}')+1]
@@ -219,6 +222,14 @@ def main():
             print("  Running PlayVision™ broadcasting software.\n")
             print(f"  Server Status: {goodColor + 'Running' + endColor if serverRunning else warningColor + 'Not Running' + endColor}")
             print(f"  Server Uptime: {uptimeStr if serverRunning else warningColor + 'Not Running' + endColor}")
+            if cpuUsage <= 50:
+                print(f"  CPU Usage: {goodColor + str(cpuUsage) + endColor}%")
+            elif cpuUsage <= 70:
+                print(f"  CPU Usage: {dangerColor + str(cpuUsage) + endColor}%")
+            else:
+                print(f"  CPU Usage: {warningColor + str(cpuUsage) + endColor}%")
+            print(f"  OS: {platform.system()} {platform.release()}")
+            print(f"  Python Version: {platform.python_version()}\n")
             print(f"  Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else (warningColor + 'Not set' + endColor)}")
             print(f"  Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else (warningColor + 'Not set' + endColor)}")
             print(f"  Database Name: {jsonObj['dbName'] if jsonObj['dbName'] != '' else (warningColor + 'Not set' + endColor)}")
@@ -233,6 +244,10 @@ def main():
                 print(goodColor + "  Server is running." + endColor)
             else:
                 print(warningColor + "  Server is not running." + endColor)
+
+            cpuUsage = psutil.cpu_percent()
+            if cpuUsage > 90:
+                print(warningColor + f"  High CPU Usage: {cpuUsage}%" + endColor)
         elif "update" in command:
             if not serverRunning:
                 arguments = command.split()
