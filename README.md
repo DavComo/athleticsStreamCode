@@ -35,7 +35,8 @@ Once you have completed the initial setup, you can start the server with the sam
 ```sh 
  python run.py gui
 ```
-Which will start the server like normally and open the control panel as well.
+Which will start the server like normally and open the control panel as well. <br>
+To add the render pages to your OBS or chosen streaming software, add the chosen webpage as a source with a 2560x1440 resolution. You can obtain the web address of all the renderer pages in the 'Renderer Page Index' when you start the server.
 <br><br>
 
 ## 3. Switching Stream Databases
@@ -65,13 +66,12 @@ When running the command, ignore the curly brackets and pick either the add or r
 
 #### Adding
 If you are adding a new school, follow the instructions of the program and when prompted for the path of the logo for the school you want, it's important to ensure the picture is exactly 200 by 200 pixels in size and that you enter the absolute path of the image in your system (Starting with for example C:/ on Windows and /Users on MacOS). After you have entered, if your [streamData.js](./streamData.js) is valid and existant, you will be asked to provide the names of all the databases you want to add the school to. Enter these comma separated, for example:
-`MIS-stream-1, MIS-stream_2, MIS-stream_3` <br>
-After all that, you should receive confirmation of each successfull change to the databases and able to seamlessly use your new custom school.
+'`MIS-stream-1, MIS-stream_2, MIS-stream_3`' <br>
+After all that, you should receive confirmation of each successful change to the databases and able to seamlessly use your new custom school.
 <br><br>
 
 #### Removing
-To remove a school from the database use the 'remove' keyword when running the `modifySchoolList.py` file. Most steps will be similar to the steps used for adding schools and follow the same rules, for example, database names will need to be comma separated. If you want to know what schools each database has attached, check through the color view in the control panel for each database. <br>
-<font style='color: red; weight: 300px'>**Warning: Removing a school for ANY database will erase the corresponding picture therefore, without adding it back manually, it isn't possible to have only one database with a school and other not without some manual changes needed.**</font>
+To remove a school from the database use the 'remove' keyword when running the `modifySchoolList.py` file. Most steps will be similar to the steps used for adding schools and follow the same rules, for example, database names will need to be comma separated. If you want to know what schools each database has attached, check through the color view in the control panel for each database.
 
 <br><br>
 
@@ -85,10 +85,18 @@ Finally, on the color setter page, each value must be saved as a valid hex code 
 <br><br>
 
 ## 6. Integrated Command Console
-It is not recommended to use the integrated command console without familiarizing youself with its uses first. Due to the everchanging nature of the ICC, this documentation won't referr to every command in the console, however, invoking the `help` command will display every command and a short explanation of its function.
+It is not recommended to use the integrated command console without familiarizing youself with its uses first. Due to the everchanging nature of the ICC, this documentation won't refer to every command in the console; however, invoking the `help` command will display every command and a short explanation of its function. Additionally, below is a simple explanation of some of the most basic commands and functions of the ICC.
+1. Starting/Stopping the Server <br> -> Starting and stopping the server is simple with only the `stop` and `start` keywords being necessary. By default, when you start the `run.py` file the server will initiate started. 
+2. Checking Server Status <br> -> There are two useful ways to tell whether the server is running or not. The first is by calling the `status` command which, along with a color guide, will say the status of the server. The second method is by checking the color of the `>>>` sideways carats. Green color indicates that the server is running, and red indicates the server is down.
+3. Updating Database Name <br> -> With the release of version 1.3.0 and onwards, you can change which database the renderer is currently attached to without the need to stop the server or modify the [streamData.js](./streamData.js) file manually. To do so, run the `updatedb` command followed by the name of the assigned database you want to switch to. For example `>>> updatedb MIS-stream_1`. If done correctly, you should receive a confirmation of the database switch. Please keep in mind this confirmation isn't a confirmation of access authorization to the database, and any changes done with this command are applied to your [streamData.js](./streamData.js) file and carried over across instances. Oftentimes, you will also need to refresh your webpage source in OBS or your chosen streaming software to implement this change.<br>
+4. Exiting the ICC <br> -> Exiting the ICC will also instantly stop the server. To do so, run the `exit` command. You can also exit through the standard Ctrl+C combination, universal to most command-line interfaces, to exit a process.
+
+Besides these basics, there are many more commands in the ICC with many more being added regularly. <br>
+<font style='color: red; weight: 300px'>**Warning: All commands in the ICC are case-sensitive; i.e. updatedb isn't the same as updateDB**</font>
 
 <br><br>
 
 ## 7. Troubleshooting
-To Be Added When Encountering Issues. <br>
+>To Be Added When Encountering Issues. <br>
+
 For solving any issues that aren't listed here, please email live@mis-munich.de with the email subject being `Issue:` followed by a description of your issue.

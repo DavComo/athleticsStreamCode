@@ -97,7 +97,9 @@ if os.path.exists("./.initialSetupDone.txt"):
 
                         
         elif sys.argv[1].lower() == 'remove':
-            print("Warning: School logo will be permanently deleted from the CommonUse folder.\n")
+            deleteLogo = input("Do you want to delete the logo of the school you want to remove? (y/n): ").lower()
+
+
 
             if not len(sys.argv) > 2:
                 acronym = input("Enter the acronym of the school you want to remove (MIS, ZIS, etc.): ")
@@ -123,6 +125,10 @@ if os.path.exists("./.initialSetupDone.txt"):
                 print("Invalid database name. Fix and try again.")
                 sys.exit(0)
             else:
+                if deleteLogo == 'y':
+                    os.system(f"rm ./CommonUse/{acronym}_Logo-200x200.png")
+                
+
                 database_names = [db.strip() for db in wantedDB.split(",")]
                 aws_access_key = jsonObj['accessKey']
                 aws_secret_key = jsonObj['secretKey']
