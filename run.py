@@ -75,9 +75,10 @@ def main():
 
     def extract_folder(zip_file_path):
         file = next(os.walk(zip_file_path))[1][0]
+        sourceFolder = os.path.basename(os.path.normpath(zip_file_path))
 
         if platform.system() == "Linux" or platform.system() == "Darwin":
-            if zip_file_path[0].isdigit():
+            if sourceFolder[0].isdigit():
                 os.system(f"cp -a {zip_file_path}/{file}/. .")
             else:
                 os.system(f"cp -a {zip_file_path}/. .")
