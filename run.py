@@ -244,7 +244,7 @@ def main():
                     continue
                 
                 print("  Updating software...")
-                #delete_all_except_one("streamData.js")
+                delete_all_except_one("streamData.js")
                 extract_folder(arguments[1])
                 print("  Software updated. Please restart the run.py file.")
                 exit()
