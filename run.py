@@ -77,7 +77,10 @@ def main():
         file = next(os.walk(zip_file_path))[1][0]
 
         if platform.system() == "Linux" or platform.system() == "Darwin":
-            os.system(f"cp -a {zip_file_path}/{file}/. .")
+            if zip_file_path[0].isdigit():
+                os.system(f"cp -a {zip_file_path}/{file}/. .")
+            else:
+                os.system(f"cp -a {zip_file_path}/. .")
         elif platform.system() == "Windows":
             os.system(f"xcopy /e /q /i \"{zip_file_path}/{file}\" \"./\"")
             
