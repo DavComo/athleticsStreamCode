@@ -77,11 +77,8 @@ def main():
         file = next(os.walk(zip_file_path))[1][0]
 
         if platform.system() == "Linux" or platform.system() == "Darwin":
-            print(f"cp -a {zip_file_path}/{file} .")
-            os.system(f"cp -a {zip_file_path}/{file} .")
+            os.system(f"cp -a {zip_file_path}/{file}/. .")
         elif platform.system() == "Windows":
-            print(f"xcopy /e /q /i \"{zip_file_path}/{file}\" \"./\"")
-
             os.system(f"xcopy /e /q /i \"{zip_file_path}/{file}\" \"./\"")
             
 
@@ -246,6 +243,7 @@ def main():
                 delete_all_except_one("streamData.js")
                 extract_folder(arguments[1])
                 print("  Software updated. Please restart the run.py file.")
+                exit()
             else:
                 print("  Can't update software while server is running. Stop server first.")
         elif command == "":
