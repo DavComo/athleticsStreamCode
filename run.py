@@ -24,7 +24,7 @@ serverPort = 5500
 table = None
 dynamodb = None;
 pswd = None;
-programInfo = None
+softwareInfo = None;
 
 
 
@@ -37,16 +37,19 @@ def main():
     global table
     global dynamodb
     global pswd
-    global programInfo
+    global softwareInfo
 
     startTime = time.time()
 
 
+
     def setupStreamData():
         if not os.path.exists("./streamData.js"):
-            accessKey = input("Enter your given access key (Leave blank to set up manually later): ")
-            secretKey = input("Enter your given secret key (Leave black to set up manually later): ")
-            dbName = input("Enter your given database name (Leave blank to set up manually later): ")
+            response = json.loads(requests.get('https://lgphy9q5lb.execute-api.eu-central-1.amazonaws.com/?licenseKey=' + softwareInfo['licensekey']).text)
+
+            accessKey = response['accessKey']
+            secretKey = response['secretKey']
+            dbName = response.text['defaultStream']
 
             streamData = open("./streamData.js", "w")
             streamData.write(f"var streamData = {{\n\t\"dbName\": \"{dbName}\",\n\t\"accessKey\": \"{accessKey}\",\n\t\"secretKey\": \"{secretKey}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
@@ -87,11 +90,9 @@ def main():
                 except Exception as e:
                     print(f"Error deleting {file_path}: {e}")
 
-    def download_and_extract_folder():
-        if not os.path.exists("temp"):
-            os.system("mkdir temp")
-        response = requests.get('https://g59302qee1.execute-api.eu-central-1.amazonaws.com?key=' + programInfo['key'])
-        filename = response.headers.get('Content-Disposition')
+    def updateSoftware():
+        response = requests.get('https://g59302qee1.execute-api.eu-central-1.amazonaws.com?key=' + softwareInfo['licensekey'])
+        filename = response.headers.get('Content-Disposition')[22:-1]
 
         if response.status_code == 200:
             with open(filename, 'wb') as file:
@@ -99,6 +100,9 @@ def main():
         elif json.loads(response.text)['error'] == 'Key not found':
             print('Invalid key.')
             exit()
+        
+        if not os.path.exists("temp"):
+            os.system("mkdir temp")
 
         zipfile.ZipFile(filename).extractall('temp')
 
@@ -121,14 +125,18 @@ def main():
             os.system("rmdir /s /q temp")
             os.system(f"del {filename}")
         
+        with open('.softwareInfo.json') as dataFile:
+            softwareInfo['version'] = filename[:-4]
+            dataFile.write(json.dumps(softwareInfo))
+        
 
-    def loadProgramInfo():
-        global programInfo
-        with open('.programInfo.json') as dataFile:
+    def loadSoftwareInfo():
+        global softwareInfo
+        with open('.softwareInfo.json') as dataFile:
             data = dataFile.read()
             obj = data[data.find('{') : data.rfind('}')+1]
-            programInfo = json.loads(obj)
-               
+            softwareInfo = json.loads(obj)
+    loadSoftwareInfo()           
 
     if not os.path.exists("./.initialSetupDone.txt"):
         if platform.system() == "Windows":
@@ -218,7 +226,6 @@ def main():
 
     print("Starting server...\n")
     printInfo()
-    loadProgramInfo()
     serverStartCommand = f"python3 -m http.server {serverPort}"
     server = subprocess.Popen(serverStartCommand.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     serverRunning = True
@@ -232,7 +239,7 @@ def main():
         if commands[0] == "help":
             print("  start: Starts the server")
             print("  stop: Stops the server")
-            print("  restart: Restarts the server")
+            print("  restart [port number]: Restarts the server, optionally changing the port")
             print("  help: Displays this help message")
             print("  exit: Exits the program")
             print("  clear: Clears the console")
@@ -242,7 +249,7 @@ def main():
             print("  gui: Opens the control panel in your default browser")
             print("  status: Displays the status of the server")
             print("  addresses: Displays the addresses of all available pages")
-            print("  update: Updates the software to the latest alloted version")
+            print("  update: Updates the software to the latest purchased version")
         elif commands[0] == "start":
             if len(commands) == 2 and commands[1].isdigit():
                 serverStartCommand = f"python3 -m http.server {commands[1]}"
@@ -258,9 +265,12 @@ def main():
             else:
                 print("  Server is already running.")
         elif commands[0] == "stop":
-            server.terminate()
-            print(warningColor + "  Stopping Server." + endColor)
-            serverRunning = False
+            if serverRunning:
+                server.terminate()
+                print(warningColor + "  Stopping Server." + endColor)
+                serverRunning = False
+            else:
+                print("  Server is not running.")
         elif commands[0] == "restart" or commands[0] == "port":
             if serverRunning:
                 if len(commands) == 2 and commands[1].isdigit():
@@ -348,11 +358,15 @@ def main():
             print(f"\n  Control Panel\n    http://localhost:{serverPort}/Transmitter/main.html")
         elif commands[0] == "update":
             if not serverRunning:
-                print("  Updating software...")
-                delete_all_except(["streamData.js", ".programInfo.json"])
-                download_and_extract_folder()
-                print("  Software updated. Please restart the run.py file.")
-                exit()
+                confirm = input(warningColor + "  Are you sure you want to update the software? (y/n) " + endColor)
+                if confirm.lower() == "y":
+                    print("  Updating software...")
+                    delete_all_except(["streamData.js", ".softwareInfo.json"])
+                    updateSoftware()
+                    print("  Software updated. Please restart the run.py file.")
+                    exit()
+                else:
+                    print("  Update cancelled.")
             else:
                 print("  Can't update software while server is running. Stop server first.")
         elif commands[0] == "":
