@@ -26,10 +26,10 @@ if os.path.exists("./.initialSetupDone.txt"):
                 os.system(f"cp {logoPath} ./CommonUse/{acronym}_Logo-200x200.png")
 
             try:
-                if not os.path.exists("streamData.js"):
+                if not os.path.exists("./.streamData.js"):
                     print("streamData.js not found. Please fix and run again.")
                     sys.exit(0)
-                with open('streamData.js') as dataFile:
+                with open('./.streamData.js') as dataFile:
                         data = dataFile.read()
                         obj = data[data.find('{') : data.rfind('}')+1]
                         jsonObj = json.loads(obj)
@@ -106,10 +106,10 @@ if os.path.exists("./.initialSetupDone.txt"):
             else:
                 acronym = sys.argv[2]
             try:
-                if not os.path.exists("streamData.js"):
+                if not os.path.exists("./.streamData.js"):
                     print("streamData.js not found. Please fix and run again.")
                     sys.exit(0)
-                with open('streamData.js') as dataFile:
+                with open('./.streamData.js') as dataFile:
                         data = dataFile.read()
                         obj = data[data.find('{') : data.rfind('}')+1]
                         jsonObj = json.loads(obj)

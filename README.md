@@ -22,8 +22,6 @@ And then run the following command in terminal or command line to initialize the
 ```sh 
 python run.py
 ```
-During the setup, you will be asked for your AWS access and secret keys as well as your database name, which can be changed later, as per section 3. You may leave them blank and then add them manually in the [streamData.js](./streamData.js) file, however it is not recommended to complete the setup this way. The server will start as normal, however most parts of it won't work.<br>
-
 <font style='color: red; weight: 300px'>**If you want to stop the setup or server at any point you may do so with Ctrl+C**</font>
 
 Once the initial setup has been completed, the server should automatically start up. In the command line interface, you can see some useful info such as the local address of the control panel and renderers.
@@ -36,7 +34,7 @@ Once you have completed the initial setup, you can start the server with the sam
  python run.py gui
 ```
 Which will start the server like normally and open the control panel as well. <br>
-To add the render pages to your OBS or chosen streaming software, add the chosen webpage as a source with a 2560x1440 resolution. You can obtain the web address of all the renderer pages in the 'Renderer Page Index' when you start the server.
+To add the render pages to your OBS or chosen streaming software, add the chosen webpage as a source with any 16:9 aspect ratio (Common values are 2560x1440 and 1920x1080 pixels). You can obtain the exact web address' of all your renderer pages in the 'Renderer Page Index' section in termal or command line when you start the server.
 <br><br>
 
 ## 3. Switching Stream Databases
@@ -50,9 +48,7 @@ PlayVision™ software allows for controlling multiple streams at once from one 
 >Once the text in the top right says you are connected, you are good to go.<br><br>
 
 >#### Renderer Switching
->Switching renderers isn't as simple as switching control panel since it isn't assumed you would need to switch database mid-stream, but it still is far from complicated. <br>
->To switch renderer database, go to your [streamData.js](./streamData.js) file and change the value of `dbName` to one of your assigned databases. Then, start or restart the broadcasting server and your new stream should be attached to your chosen database.<br>
->Since the release of version 1.4.0, it is also possible to switch your renderer database in real time without shutting down the stream through the integrated command console (ICC) with the `updatedb` command. For more instructions on how to use the ICC, use the `help` command.
+>Since the release of version 1.4.0, switching renderer databases in real time is also possible without shutting down the stream through the integrated command console (ICC) with the `updatedb` command. For more instructions on how to use the ICC, use the `help` command.<br><br>
 
 <br><br>
 
@@ -65,7 +61,7 @@ When running the command, ignore the curly brackets and pick either the add or r
 <br><br>
 
 #### Adding
-If you are adding a new school, follow the instructions of the program and when prompted for the path of the logo for the school you want, it's important to ensure the picture is exactly 200 by 200 pixels in size and that you enter the absolute path of the image in your system (Starting with for example C:/ on Windows and /Users on MacOS). After you have entered, if your [streamData.js](./streamData.js) is valid and existant, you will be asked to provide the names of all the databases you want to add the school to. Enter these comma separated, for example:
+If you are adding a new school, follow the instructions of the program and when prompted for the path of the logo for the school you want, it's important to ensure the picture is exactly 200 by 200 pixels in size and that you enter the absolute path of the image in your system (Starting with for example C:/ on Windows and /Users on MacOS). After you have entered the image ptah, you will be asked to provide the names of all the databases you want to add the school to. Enter these comma separated, for example:
 '`MIS-stream-1, MIS-stream_2, MIS-stream_3`' <br>
 After all that, you should receive confirmation of each successful change to the databases and able to seamlessly use your new custom school.
 <br><br>
@@ -88,11 +84,11 @@ Finally, on the color setter page, each value must be saved as a valid hex code 
 It is not recommended to use the integrated command console without familiarizing youself with its uses first. Due to the everchanging nature of the ICC, this documentation won't refer to every command in the console; however, invoking the `help` command will display every command and a short explanation of its function. Additionally, below is a simple explanation of some of the most basic commands and functions of the ICC.
 1. Starting/Stopping the Server <br> -> Starting and stopping the server is simple with only the `stop` and `start` keywords being necessary. By default, when you start the `run.py` file the server will initiate started. 
 2. Checking Server Status <br> -> There are two useful ways to tell whether the server is running or not. The first is by calling the `status` command which, along with a color guide, will say the status of the server. The second method is by checking the color of the `>>>` sideways carats. Green color indicates that the server is running, and red indicates the server is down.
-3. Updating Database Name <br> -> With the release of version 1.4.0 and onwards, you can change which database the renderer is currently attached to without the need to stop the server or modify the [streamData.js](./streamData.js) file manually. To do so, run the `updatedb` command followed by the name of the assigned database you want to switch to. For example `>>> updatedb MIS-stream_1`. If done correctly, you should receive a confirmation of the database switch. Please keep in mind this confirmation isn't a confirmation of access authorization to the database, and any changes done with this command are applied to your [streamData.js](./streamData.js) file and carried over across instances. Oftentimes, you will also need to refresh your webpage source in OBS or your chosen streaming software to implement this change.<br>
+3. Updating Database Name <br> -> With the release of version 1.4.0 and onwards, you can change which database the renderer is currently attached to without the need to stop the server or modify files manually. To do so, run the `updatedb` command followed by the name of the assigned database you want to switch to. For example `>>> updatedb MIS-stream_1`. If done correctly, you should receive a confirmation of the database switch. Please keep in mind this confirmation isn't a confirmation of access authorization to the database, and any changes done with this command are applied to your future streams on the same device and carried over across instances. Oftentimes, you will also need to refresh your webpage source in OBS or your chosen streaming software to implement this change.
 4. Exiting the ICC <br> -> Exiting the ICC will also instantly stop the server. To do so, run the `exit` command. You can also exit through the standard Ctrl+C combination, universal to most command-line interfaces, to exit a process.
+5. Advanced Info Panel <br> -> The advanced info panel, invoked with the `info` command, brings up loads of advanced information about the system such as software version, server status, port, and cpu usage.
 
 Besides these basics, there are many more commands in the ICC with many more being added regularly. <br>
-<font style='color: red; weight: 300px'>**Warning: All commands in the ICC are case-sensitive; i.e. updatedb isn't the same as updateDB**</font>
 
 <br><br>
 

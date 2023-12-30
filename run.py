@@ -7,6 +7,7 @@ import time
 import math
 import shutil
 import psutil
+import atexit
 import zipfile
 import platform
 import requests
@@ -25,6 +26,7 @@ table = None
 dynamodb = None;
 pswd = None;
 softwareInfo = None;
+activeDb = None;
 
 
 
@@ -37,23 +39,51 @@ def main():
     global table
     global dynamodb
     global pswd
+    global activeDb
     global softwareInfo
 
     startTime = time.time()
 
 
 
-    def setupStreamData():
-        if not os.path.exists("./streamData.js"):
-            response = json.loads(requests.get('https://lgphy9q5lb.execute-api.eu-central-1.amazonaws.com/?licenseKey=' + softwareInfo['licensekey']).text)
+    def setupStreamData(check=True):
+        response = requests.get('https://lgphy9q5lb.execute-api.eu-central-1.amazonaws.com/?licenseKey=' + softwareInfo['licensekey'])
 
+        if response.status_code == 200:
+            response = json.loads(response.text)
             accessKey = response['accessKey']
             secretKey = response['secretKey']
-            dbName = response.text['defaultStream']
+            
+            temp = None
+            if os.path.exists("./.streamData.js"):
+                with open('./.streamData.js') as dataFile:
+                    data = dataFile.read()
+                    obj = data[data.find('{') : data.rfind('}')+1]
+                    temp = json.loads(obj)
 
-            streamData = open("./streamData.js", "w")
+            if temp != None:
+                if temp['dbName'] == "":
+                    dbName = response['defaultStream']
+                    print("setting to default stream")
+                else:
+                    dbName = temp['dbName']
+                    print("setting to user stream")
+            else:
+                dbName = response['defaultStream']
+
+            streamData = open("./.streamData.js", "w")
             streamData.write(f"var streamData = {{\n\t\"dbName\": \"{dbName}\",\n\t\"accessKey\": \"{accessKey}\",\n\t\"secretKey\": \"{secretKey}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
             streamData.close()
+
+            if check:
+                checkValidity()
+        elif response.status_code == 403:
+            print("Invalid license key.")
+            exit()
+        else:
+            print("Error connecting to server. Please try again later.")
+            print(response.text)
+            exit()
 
     def printInfo():
         print(f"->  Access the control panel at http://localhost:{serverPort}/Transmitter/main.html\n")
@@ -65,9 +95,6 @@ def main():
             print(f"Rendering for database: \'{jsonObj['dbName']}\'\n")
         else:
             print(warningColor + "Warning: No database name set. Please set in streamData.js" + endColor + "\n")
-
-        print(f"Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else (warningColor + 'Not set' + endColor)}")
-        print(f"Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else (warningColor + 'Not set' + endColor)}\n")
 
         print("Run the \'exit\' command to stop the server and exit\n")
         if not serverRunning:
@@ -125,7 +152,7 @@ def main():
             os.system("rmdir /s /q temp")
             os.system(f"del {filename}")
         
-        with open('.softwareInfo.json') as dataFile:
+        with open('.softwareInfo.json', "w") as dataFile:
             softwareInfo['version'] = filename[:-4]
             dataFile.write(json.dumps(softwareInfo))
         
@@ -136,7 +163,40 @@ def main():
             data = dataFile.read()
             obj = data[data.find('{') : data.rfind('}')+1]
             softwareInfo = json.loads(obj)
-    loadSoftwareInfo()           
+    loadSoftwareInfo()     
+
+    def checkValidity():
+        validDirs = ['Transmitter', 'Renderer', 'CommonUse', '.streamData.js', '.softwareInfo.json', '.requirements.txt', 'run.py']
+        missingFiles = []
+
+        for file in validDirs:
+            if not os.path.exists(file):
+                missingFiles.append(file)
+
+        if len(missingFiles) > 0:
+            if os.path.exists(".initialSetupDone.txt"):
+                print(f"Missing files/directories: {missingFiles}")
+                repair = input("Would you like to repair the installation? (y/n) ")
+            else:
+                repair = "y"
+            if repair.lower() == "y":
+                print("Repairing installation...")
+                delete_all_except([".streamData.js", ".softwareInfo.json"])
+                updateSoftware()
+                print("Installation repaired. Please restart the run.py file.")
+                exit()
+
+    def exit_handler():
+        if jsonObj != None:
+            jsonObj['accessKey'] = ''
+            jsonObj['secretKey'] = ''
+            with open('./.streamData.js', 'w') as outfile:
+                
+                string = f"var streamData = {{\n\t\"dbName\": \"{activeDb}\",\n\t\"accessKey\": \"{jsonObj['accessKey']}\",\n\t\"secretKey\": \"{jsonObj['secretKey']}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};"
+                outfile.write(string)
+
+
+
 
     if not os.path.exists("./.initialSetupDone.txt"):
         if platform.system() == "Windows":
@@ -178,14 +238,16 @@ def main():
         "Event Name" : "/Renderer/football/eventName/main.html",
     }
 
-    if not os.path.exists("streamData.js"):
+    if not os.path.exists("./.streamData.js"):
         print("streamData.js not found. Please fix and run again.")
         exit()
 
-    with open('streamData.js') as dataFile:
+    setupStreamData(False)
+    with open('./.streamData.js') as dataFile:
         data = dataFile.read()
         obj = data[data.find('{') : data.rfind('}')+1]
         jsonObj = json.loads(obj)
+    atexit.register(exit_handler)
 
     executedArguments = " ".join(sys.argv[1:]).split('-')[1:]
     formattedArguments = {}
@@ -219,16 +281,20 @@ def main():
             exit()
         else:
             jsonObj['dbName'] = formattedArguments['d']
-            streamData = open("./streamData.js", "w")
+            streamData = open("./.streamData.js", "w")
             streamData.write(f"var streamData = {{\n\t\"dbName\": \"{jsonObj['dbName']}\",\n\t\"accessKey\": \"{jsonObj['accessKey']}\",\n\t\"secretKey\": \"{jsonObj['secretKey']}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
             streamData.close()
     
-
+    checkValidity()
     print("Starting server...\n")
     printInfo()
     serverStartCommand = f"python3 -m http.server {serverPort}"
     server = subprocess.Popen(serverStartCommand.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     serverRunning = True
+    if jsonObj['accessKey'] == '' or jsonObj['secretKey'] == '':
+        print(warningColor + "Error: No access key or secret key set." + endColor + "\n")
+    activeDb = jsonObj['dbName']
+
     while True:
         if serverRunning:
             commands = input(goodColor + ">>> " + endColor).split()
@@ -308,7 +374,8 @@ def main():
             else:
                 if len(commands) == 2:
                     dbName = commands[1]
-                    streamData = open("./streamData.js", "w")
+                    activeDb = dbName
+                    streamData = open("./.streamData.js", "w")
                     streamData.write(f"var streamData = {{\n\t\"dbName\": \"{dbName}\",\n\t\"accessKey\": \"{jsonObj['accessKey']}\",\n\t\"secretKey\": \"{jsonObj['secretKey']}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
                     streamData.close()
                     print("  Database name updated to " + goodColor + dbName + endColor + ". Reload sources in OBS to apply.")
@@ -317,12 +384,12 @@ def main():
         elif commands[0] == "info":
             cpuUsage = psutil.cpu_percent()
 
-            with open('streamData.js') as dataFile:
+            with open('./.streamData.js') as dataFile:
                 data = dataFile.read()
                 obj = data[data.find('{') : data.rfind('}')+1]
                 jsonObj = json.loads(obj)
             uptimeStr = f"{str(math.floor((time.time() - startTime) / 60 / 60))}h {str(math.floor((time.time() - startTime) / 60) % 60)}m {str(math.floor(time.time() - startTime) % 60)}s"
-            print("  Running PlayVision™ broadcasting software.\n")
+            print(f"  Running PlayVision™ broadcasting software version {softwareInfo['version']}.\n")
             print(f"  Server Status: {goodColor + 'Running' + endColor if serverRunning else warningColor + 'Not Running' + endColor}")
             print(f"  Server Uptime: {uptimeStr if serverRunning else warningColor + 'Not Running' + endColor}")
             if cpuUsage <= 50:
@@ -334,9 +401,8 @@ def main():
             print(f"  Port: {serverPort}\n")
             print(f"  OS: {platform.system()} {platform.release()}")
             print(f"  Python Version: {platform.python_version()}\n")
-            print(f"  Access Key: {jsonObj['accessKey'] if jsonObj['accessKey'] != '' else (warningColor + 'Not set' + endColor)}")
-            print(f"  Secret Key: {jsonObj['secretKey'] if jsonObj['secretKey'] != '' else (warningColor + 'Not set' + endColor)}")
-            print(f"  Database Name: {jsonObj['dbName'] if jsonObj['dbName'] != '' else (warningColor + 'Not set' + endColor)}")
+            print(f"  License Key: {softwareInfo['licensekey'] if softwareInfo['licensekey'] != '' else (warningColor + 'Not Found' + endColor)}")
+            print(f"  Database Name: {jsonObj['dbName'] if jsonObj['dbName'] != '' else (warningColor + 'Not Set' + endColor)}")
         elif commands[0] == "gui":
             if serverRunning:
                 webbrowser.open(f"http://localhost:{serverPort}/Transmitter/main.html", new=1)
@@ -361,7 +427,7 @@ def main():
                 confirm = input(warningColor + "  Are you sure you want to update the software? (y/n) " + endColor)
                 if confirm.lower() == "y":
                     print("  Updating software...")
-                    delete_all_except(["streamData.js", ".softwareInfo.json"])
+                    delete_all_except([".streamData.js", ".softwareInfo.json"])
                     updateSoftware()
                     print("  Software updated. Please restart the run.py file.")
                     exit()
