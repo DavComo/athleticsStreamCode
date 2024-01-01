@@ -197,6 +197,8 @@ function fetchData() {
 }
 
 function updateData() {
+    document.getElementById("blurrableElement").classList.remove("blur");
+
     docData = {
         "team_1" : docDataTemp['gameScreen']['sideOneName'].S,
         "team_2" : docDataTemp['gameScreen']['sideTwoName'].S,

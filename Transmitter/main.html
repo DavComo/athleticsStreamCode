@@ -17,9 +17,9 @@
 
     
     <body style="background-color: #f0f0f0;">
-        <div class="" id="blurrableElement">
+        <div class="blur" id="blurrableElement">
             <!-- Navigation Bar -->
-            <div class="tabs tabs--standalone">
+            <div class="tabs tabs--standalone navbar">
                 <div role="tablist" class="hScroller">
                     <span class hScroller-scroll is-calculated id="navBar">
                         <span class="tabs-tab is-active" role="tab" id="pickColorPageTab">
@@ -36,15 +36,16 @@
                         </span>
                     </span>
                 </div>
-                <span class="tabs-tab noHover" style="margin-right: 10px; margin-left: auto; margin-top: auto; margin-bottom: auto;" id="serverStatus">
-                    
-                </span>
-                <input class="tabs-tab" style="margin-right: 10px; margin-left: 0px; margin-top: auto; margin-bottom: auto;" id="serverName">
-                <button class="button--primary button button--icon" style="width:fit-content; margin-bottom: auto; margin-right: 5px; background-color:#1E6FB3; border-color: #1E6FB3; margin-top: auto; height: 30px;"  id="resetValues">
-                    <span>
-                        Sync/Reset Values
-                    </span>
-                </button>
+
+                <div class="infoBar">
+                    <span class="tabs-tab noHover" style="margin-right: 10px; margin-left: auto; margin-top: auto; margin-bottom: auto;" id="serverStatus"></span>
+                    <input class="tabs-tab" style="margin-right: 10px; margin-left: 0px; margin-top: auto; margin-bottom: auto;" id="serverName">
+                    <button class="button--primary button button--icon" style="width:fit-content; margin-bottom: auto; margin-right: 5px; background-color:#1E6FB3; border-color: #1E6FB3; margin-top: auto; height: 30px;"  id="resetValues">
+                        <span>
+                            Sync/Reset Values
+                        </span>
+                    </button>
+                </div>  
             </div>
 
             <ul class="tabPanes js-pageTabPanes page-panes">

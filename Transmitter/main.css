@@ -97,3 +97,13 @@
     width: 10%;
     display: inline-flex;
 }
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+}
+
+.infoBar {
+    display: flex;
+    justify-content: space-between;
+}

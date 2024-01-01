@@ -8,7 +8,8 @@ PlayVision™ Documentation
 4. [Add/Remove Custom Schools](#4-addremove-custom-schools)
 5. [Control Panel Specifications](#5-control-panel-specifications)
 6. [Integrated Command Console](#6-integrated-command-console)
-7. [Toubleshooting](#7-troubleshooting)
+7. [Updating](#7-updating)
+8. [Toubleshooting](#8-troubleshooting)
 
 <br>
 
@@ -88,11 +89,16 @@ It is not recommended to use the integrated command console without familiarizin
 4. Exiting the ICC <br> -> Exiting the ICC will also instantly stop the server. To do so, run the `exit` command. You can also exit through the standard Ctrl+C combination, universal to most command-line interfaces, to exit a process.
 5. Advanced Info Panel <br> -> The advanced info panel, invoked with the `info` command, brings up loads of advanced information about the system such as software version, server status, port, and cpu usage.
 
-Besides these basics, there are many more commands in the ICC with many more being added regularly. <br>
+Besides these basics, there are many more commands in the ICC with many more being added regularly.
 
 <br><br>
 
-## 7. Troubleshooting
+## 7. Updating
+Updating your software is very easy and since version 1.4.0 possible with only one command within the integrated command console. By running the `update` command, you can update to your newest purchased version automatically and without the need to change anything manually. 
+
+<br><br>
+
+## 8. Troubleshooting
 >To Be Added When Encountering Issues. <br>
 
 For solving any issues that aren't listed here, please email live@mis-munich.de with the email subject being `Issue:` followed by a description of your issue.

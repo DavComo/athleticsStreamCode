@@ -284,6 +284,9 @@ async function updateStopwatch() {
     } else {
         while (docData['stopwatchrunning'] == true) {
             var timeinms = Date.now() - docData['startedAt'];
+            if (timeinms < 0) {
+                timeinms = 0;
+            }
             var seconds = Math.floor(timeinms / 1000) % 60;
             var minutes = Math.floor(timeinms / 60000) % 60;
             $('#stopwatch').text(String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0'));

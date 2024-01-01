@@ -8,11 +8,13 @@ import math
 import shutil
 import psutil
 import atexit
+import socket
 import zipfile
 import platform
 import requests
 import webbrowser
 import subprocess
+from enum import Enum
 
 warningColor = '\033[91m'
 dangerColor = '\033[93m'
@@ -43,11 +45,14 @@ def main():
     global softwareInfo
 
     startTime = time.time()
-
-
+    print("Starting server...\n")
 
     def setupStreamData(check=True):
-        response = requests.get('https://lgphy9q5lb.execute-api.eu-central-1.amazonaws.com/?licenseKey=' + softwareInfo['licensekey'])
+        try:
+            response = requests.get('https://lgphy9q5lb.execute-api.eu-central-1.amazonaws.com/?licenseKey=' + softwareInfo['licensekey'])
+        except requests.exceptions.ConnectionError:
+            print("Error connecting to server. Please check connection and try again later.")
+            exit()
 
         if response.status_code == 200:
             response = json.loads(response.text)
@@ -64,10 +69,8 @@ def main():
             if temp != None:
                 if temp['dbName'] == "":
                     dbName = response['defaultStream']
-                    print("setting to default stream")
                 else:
                     dbName = temp['dbName']
-                    print("setting to user stream")
             else:
                 dbName = response['defaultStream']
 
@@ -86,13 +89,15 @@ def main():
             exit()
 
     def printInfo():
-        print(f"->  Access the control panel at http://localhost:{serverPort}/Transmitter/main.html\n")
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname)
+        print(f"->  Access the control panel with this device or another on the same network at: \n      http://{IPAddr}:{serverPort}/Transmitter/main.html\n")
 
         print("Renderer page index:")
         for page in webpageIndex:
-            print("->  Access the " + page + f" page at http://localhost:{serverPort}" + webpageIndex[page])
+            print("->  Access the " + page + f" page at: \n      http://{IPAddr}:{serverPort}" + webpageIndex[page])
         if jsonObj['dbName'] != "":
-            print(f"Rendering for database: \'{jsonObj['dbName']}\'\n")
+            print(f"\nRendering for database: \'{jsonObj['dbName']}\'\n")
         else:
             print(warningColor + "Warning: No database name set. Please set in streamData.js" + endColor + "\n")
 
@@ -118,7 +123,13 @@ def main():
                     print(f"Error deleting {file_path}: {e}")
 
     def updateSoftware():
-        response = requests.get('https://g59302qee1.execute-api.eu-central-1.amazonaws.com?key=' + softwareInfo['licensekey'])
+        try:
+            response = requests.get('https://g59302qee1.execute-api.eu-central-1.amazonaws.com?key=' + softwareInfo['licensekey'])
+        except requests.exceptions.ConnectionError:
+            print("Error connecting to server. Please check connection and try again later.")
+            exit()
+
+
         filename = response.headers.get('Content-Disposition')[22:-1]
 
         if response.status_code == 200:
@@ -199,6 +210,7 @@ def main():
 
 
     if not os.path.exists("./.initialSetupDone.txt"):
+        #Initial Setup
         if platform.system() == "Windows":
             os.system("cls")
             print("Performing initial setup...\n")
@@ -207,6 +219,7 @@ def main():
             os.system("cls")
 
             setupStreamData()
+            downloadVSCODECli()
 
             os.system("type nul > ./.initialSetupDone.txt")
             os.system("cls")
@@ -286,9 +299,8 @@ def main():
             streamData.close()
     
     checkValidity()
-    print("Starting server...\n")
     printInfo()
-    serverStartCommand = f"python3 -m http.server {serverPort}"
+    serverStartCommand = f"python3 -m http.server {serverPort} --bind 0.0.0.0"
     server = subprocess.Popen(serverStartCommand.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     serverRunning = True
     if jsonObj['accessKey'] == '' or jsonObj['secretKey'] == '':
@@ -318,7 +330,7 @@ def main():
             print("  update: Updates the software to the latest purchased version")
         elif commands[0] == "start":
             if len(commands) == 2 and commands[1].isdigit():
-                serverStartCommand = f"python3 -m http.server {commands[1]}"
+                serverStartCommand = f"python3 -m http.server {commands[1]} --bind 0.0.0.0"
                 serverPort = commands[1]
             elif len(commands) == 2 and not commands[1].isdigit():
                 print("  Invalid port number. Please enter a valid port number.")
@@ -340,7 +352,7 @@ def main():
         elif commands[0] == "restart" or commands[0] == "port":
             if serverRunning:
                 if len(commands) == 2 and commands[1].isdigit():
-                    serverStartCommand = f"python3 -m http.server {commands[1]}"
+                    serverStartCommand = f"python3 -m http.server {commands[1]} --bind 0.0.0.0"
                     serverPort = commands[1]
                 elif len(commands) == 2 and not commands[1].isdigit():
                     print(f"  Invalid port number \'{dangerColor + str(commands[1]) + endColor}\'. Please enter a valid port number.")
