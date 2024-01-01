@@ -14,7 +14,7 @@ import platform
 import requests
 import webbrowser
 import subprocess
-from enum import Enum
+import netifaces as ni
 
 warningColor = '\033[91m'
 dangerColor = '\033[93m'
@@ -46,6 +46,19 @@ def main():
 
     startTime = time.time()
     print("Starting server...\n")
+
+
+    def get_ipv4_address():
+        interfaces = ni.interfaces()
+        for interface in interfaces:
+            addresses = ni.ifaddresses(interface)
+            if ni.AF_INET in addresses:
+                ipv4_info = addresses[ni.AF_INET][0]
+                ipv4_address = ipv4_info['addr']
+                # Exclude local loopback address
+                if ipv4_address != "127.0.0.1":
+                    return ipv4_address
+        return "No IPv4 address found"
 
     def setupStreamData(check=True):
         try:
@@ -89,9 +102,13 @@ def main():
             exit()
 
     def printInfo():
-        hostname = socket.gethostname()
-        IPAddr = socket.gethostbyname(hostname)
+        IPAddr = get_ipv4_address()
         print(f"->  Access the control panel with this device or another on the same network at: \n      http://{IPAddr}:{serverPort}/Transmitter/main.html\n")
+
+        with open('./.streamData.js') as dataFile:
+            data = dataFile.read()
+            obj = data[data.find('{') : data.rfind('}')+1]
+            jsonObj = json.loads(obj)
 
         print("Renderer page index:")
         for page in webpageIndex:
@@ -170,6 +187,9 @@ def main():
 
     def loadSoftwareInfo():
         global softwareInfo
+        if not os.path.exists('.softwareInfo.json'):
+            print("Software info file not found. Please fix and run again.")
+            exit()
         with open('.softwareInfo.json') as dataFile:
             data = dataFile.read()
             obj = data[data.find('{') : data.rfind('}')+1]
