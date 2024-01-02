@@ -13,6 +13,17 @@ var schools = [];
 var dynamodb;
 var dynamoClient;
 var docDataTempTemp;
+var music = {};
+var musicTotalTime = 0;
+
+function indexMusic() {
+    for (var i = 0; i < window.music['order'].length; i++) {
+        var audio = new Audio('http://localhost:5500/Music/startingSoon/' + window.music['order'][i]);
+        audio.addEventListener('loadedmetadata', function() {
+           window.music['totalTimeSeconds'] += this.duration;
+        });
+    }
+}
 
 function fetchData() {
     const params = {
@@ -45,6 +56,21 @@ function init() {
 
     dynamodb = new AWS.DynamoDB();
     dynamoClient = new AWS.DynamoDB.DocumentClient();
+
+    window.music = {
+        "totalTimeSeconds" : 0,
+        "order" : [
+            "ES_Hard to Move On - oomiee.mp3",
+            "ES_Forget You - NIGHTCAP.mp3",
+            "ES_Be Strong - NIGHTCAP.mp3",
+            "ES_Forever Again - Bonkers Beat Club.mp3",
+            "ES_Feel So Alive - NIGHTCAP.mp3",
+            "ES_Tin Distortion - Ooyy.mp3",
+            "ES_Venture - STRLGHT.mp3"
+        ]
+    };
+
+    indexMusic();
     fetchData();
 };
 
@@ -161,6 +187,19 @@ function rgbToHex(r, g, b) {
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
+var currentSongIndex = 0;
+
+async function playSongs() {
+    var audio = new Audio('http://localhost:5500/Music/startingSoon/' + window.music['order'][currentSongIndex]);
+    audio.play();
+    currentSongIndex++;
+    if (currentSongIndex >= window.music['order'].length) {
+        currentSongIndex = 0;
+    }
+    await sleep(1000);
+    playSongs();
+}
+
 async function updateClocks() {
     while (true) {
         var targetTimeMs = docData['targetTimeMs'];
@@ -173,6 +212,10 @@ async function updateClocks() {
             var timeLeftSec = Math.floor(timeLeftMs / 1000 % 60);
             var timeLeftMin = Math.floor(timeLeftMs / 1000 / 60 % 60);
             document.getElementById('countdown').innerHTML = timeLeftMin + ':' + timeLeftSec.toString().padStart(2, '0');
+
+            if ((timeLeftSec + timeLeftMin * 60) == Math.ceil(window.music['totalTimeSeconds'])) {
+                playSongs(music);
+            }
         }
 
         var now = new Date();
