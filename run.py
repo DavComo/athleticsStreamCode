@@ -6,15 +6,12 @@ import json
 import time
 import math
 import shutil
-import psutil
 import atexit
 import socket
 import zipfile
 import platform
-import requests
 import webbrowser
 import subprocess
-import netifaces as ni
 
 warningColor = '\033[91m'
 dangerColor = '\033[93m'
@@ -45,20 +42,25 @@ def main():
     global softwareInfo
 
     startTime = time.time()
-    print("Starting server...\n")
 
+    if os.path.exists("./.initialSetupDone.txt"):
+        import psutil
+        import requests
+        import netifaces as ni
 
     def get_ipv4_address():
-        interfaces = ni.interfaces()
-        for interface in interfaces:
-            addresses = ni.ifaddresses(interface)
-            if ni.AF_INET in addresses:
-                ipv4_info = addresses[ni.AF_INET][0]
-                ipv4_address = ipv4_info['addr']
-                # Exclude local loopback address
-                if ipv4_address != "127.0.0.1":
-                    return ipv4_address
-        return "No IPv4 address found"
+        if platform.system() == "Linux" or platform.system() == "Darwin":
+            interfaces = ni.interfaces()
+            for interface in interfaces:
+                addresses = ni.ifaddresses(interface)
+                if ni.AF_INET in addresses:
+                    ipv4_info = addresses[ni.AF_INET][0]
+                    ipv4_address = ipv4_info['addr']
+                    if ipv4_address != "127.0.0.1":
+                        return ipv4_address
+            return "No IPv4 address found"
+        elif platform.system() == "Windows":
+            return socket.gethostbyname(socket.gethostname())
 
     def setupStreamData(check=True):
         try:
@@ -149,6 +151,14 @@ def main():
 
         filename = response.headers.get('Content-Disposition')[22:-1]
 
+        if filename[:-4] < softwareInfo['version']:
+            confirm = input(warningColor + "  You are attempting to downgrade the software. Are you sure you want to continue? (y/n) " + endColor)
+            if confirm.lower() == "n":
+                print("  Update cancelled.")
+                return False
+        
+        delete_all_except([".streamData.js", ".softwareInfo.json"])
+
         if response.status_code == 200:
             with open(filename, 'wb') as file:
                 file.write(response.content)
@@ -184,6 +194,7 @@ def main():
             softwareInfo['version'] = filename[:-4]
             dataFile.write(json.dumps(softwareInfo))
         
+        return True
 
     def loadSoftwareInfo():
         global softwareInfo
@@ -218,9 +229,18 @@ def main():
                 exit()
 
     def exit_handler():
+        global jsonObj
+        
         if jsonObj != None:
+            with open('./.streamData.js') as dataFile:
+                data = dataFile.read()
+                obj = data[data.find('{') : data.rfind('}')+1]
+                jsonObj = json.loads(obj)
+
+
             jsonObj['accessKey'] = ''
             jsonObj['secretKey'] = ''
+            activeDb = jsonObj['dbName']
             with open('./.streamData.js', 'w') as outfile:
                 
                 string = f"var streamData = {{\n\t\"dbName\": \"{activeDb}\",\n\t\"accessKey\": \"{jsonObj['accessKey']}\",\n\t\"secretKey\": \"{jsonObj['secretKey']}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};"
@@ -237,9 +257,11 @@ def main():
             os.system("python.exe -m pip install --upgrade pip")
             os.system("pip3 install -r ./.requirements.txt")
             os.system("cls")
+            import psutil
+            import requests
+            import netifaces as ni
 
             setupStreamData()
-            downloadVSCODECli()
 
             os.system("type nul > ./.initialSetupDone.txt")
             os.system("cls")
@@ -251,6 +273,9 @@ def main():
             os.system("pip3 install --upgrade pip")
             os.system("pip3 install -r ./.requirements.txt")
             os.system("clear")
+            import psutil
+            import requests
+            import netifaces as ni
 
             setupStreamData()
 
@@ -265,10 +290,10 @@ def main():
             os.system("clear")
 
 
-
     webpageIndex = {
         "Team Scores/Stopwatch" : "/Renderer/football/teamScores/main.html",
         "Event Name" : "/Renderer/football/eventName/main.html",
+        "Start Countdown" : "/Renderer/football/startingSoon/main.html",
     }
 
     if not os.path.exists("./.streamData.js"):
@@ -284,6 +309,8 @@ def main():
 
     executedArguments = " ".join(sys.argv[1:]).split('-')[1:]
     formattedArguments = {}
+    IPAddr = get_ipv4_address()
+
     for i in range(len(executedArguments)):
         parts = executedArguments[i].split()
         if len(parts) == 2:
@@ -297,15 +324,13 @@ def main():
             print(f"Invalid argument \'{arg}\'. Type \'python run.py -h\' for a list of valid arguments.")
             exit()
     if 'h' in formattedArguments.keys() or 'help' in formattedArguments.keys():
-        print("Usage: python3 run.py [args]")
+        print("Usage: python run.py [args]")
         print("Options:")
         print("  -g           : Opens the control panel in your default browser")
         print("  -p <port>    : Sets the port of the server")
         print("  -d <db name> : Sets the database name in streamData.js")
         print("  -h/-help     : Displays this help message")
         exit()
-    if 'g' in formattedArguments.keys():
-        webbrowser.open(f"http://localhost:{serverPort}/Transmitter/main.html", new=1)
     if 'p' in formattedArguments.keys():
         serverPort = formattedArguments['p']
     if 'd' in formattedArguments.keys():
@@ -317,7 +342,12 @@ def main():
             streamData = open("./.streamData.js", "w")
             streamData.write(f"var streamData = {{\n\t\"dbName\": \"{jsonObj['dbName']}\",\n\t\"accessKey\": \"{jsonObj['accessKey']}\",\n\t\"secretKey\": \"{jsonObj['secretKey']}\",\n\t\"awsRegion\": \"eu-central-1\"\n}};")
             streamData.close()
+    if 'g' in formattedArguments.keys():
+        webbrowser.open(f"http://{IPAddr}:{serverPort}/Transmitter/main.html", new=1)
     
+    if 'h' not in formattedArguments.keys() and 'help' not in formattedArguments.keys():
+        print("Starting server...\n")
+
     checkValidity()
     printInfo()
     serverStartCommand = f"python3 -m http.server {serverPort} --bind 0.0.0.0"
@@ -430,14 +460,14 @@ def main():
                 print(f"  CPU Usage: {dangerColor + str(cpuUsage)}%" + endColor)
             else:
                 print(f"  CPU Usage: {warningColor + str(cpuUsage)}%" + endColor)
-            print(f"  Port: {serverPort}\n")
+            print(f"  Port: {serverPort}\n  Local IP Address: {IPAddr}\n")
             print(f"  OS: {platform.system()} {platform.release()}")
             print(f"  Python Version: {platform.python_version()}\n")
             print(f"  License Key: {softwareInfo['licensekey'] if softwareInfo['licensekey'] != '' else (warningColor + 'Not Found' + endColor)}")
             print(f"  Database Name: {jsonObj['dbName'] if jsonObj['dbName'] != '' else (warningColor + 'Not Set' + endColor)}")
         elif commands[0] == "gui":
             if serverRunning:
-                webbrowser.open(f"http://localhost:{serverPort}/Transmitter/main.html", new=1)
+                webbrowser.open(f"http://{IPAddr}:{serverPort}/Transmitter/main.html", new=1)
                 print("  Opened control panel in browser.")
             else:
                 print("  Can't open GUI, server is not running.")
@@ -452,17 +482,20 @@ def main():
                 print(warningColor + f"  High CPU Usage: {cpuUsage}%" + endColor)
         elif commands[0] == "addresses":
             for page in webpageIndex:
-                print(f"  {page}\n    http://localhost:{serverPort}{webpageIndex[page]}")
-            print(f"\n  Control Panel\n    http://localhost:{serverPort}/Transmitter/main.html")
+                print(f"  {page}\n    http://{IPAddr}:{serverPort}{webpageIndex[page]}")
+            print(f"\n  Control Panel\n    http://{IPAddr}:{serverPort}/Transmitter/main.html")
         elif commands[0] == "update":
             if not serverRunning:
                 confirm = input(warningColor + "  Are you sure you want to update the software? (y/n) " + endColor)
                 if confirm.lower() == "y":
                     print("  Updating software...")
-                    delete_all_except([".streamData.js", ".softwareInfo.json"])
-                    updateSoftware()
-                    print("  Software updated. Please restart the run.py file.")
-                    exit()
+                    response = updateSoftware()
+                    if response:
+                        print("  Software updated. Please restart the run.py file.")
+                        exit()
+                    else:
+                        print("  Software not updated.")
+
                 else:
                     print("  Update cancelled.")
             else:

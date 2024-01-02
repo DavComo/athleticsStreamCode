@@ -150,6 +150,37 @@ function initButtons() {
           
         dynamoClient.update(params, function(err, data) {});
 
+        var timeComponents = document.getElementById('startTime').value.split(':');
+
+        var hours = parseInt(timeComponents[0], 10) || 0;
+        var minutes = parseInt(timeComponents[1], 10) || 0;
+        var seconds = parseInt(timeComponents[2], 10) || 0;
+
+        var date = new Date();
+        date.setHours(hours);
+        date.setMinutes(minutes);
+        date.setSeconds(seconds);
+
+        var epochTimeInMs = date.getTime();
+
+        var params = {
+            TableName: tableName,
+            Key: {
+              "valueId": "startingSoon"
+            },
+            UpdateExpression: ("set eventTitle1 = :r, eventTitle2 = :s, nextEvent = :t, targetTimeMs = :u, themeSchool = :v"),
+            ExpressionAttributeValues: {
+                ":r": document.getElementById("eventTitle").value,
+                ":s": document.getElementById("eventSubtitle").value,
+                ":t": document.getElementById("nextEvent").value,
+                ":u": epochTimeInMs.toString(),
+                ":v": document.getElementById("themeSchool").value
+            },
+            ReturnValues: "UPDATED_NEW"
+          };
+          
+        dynamoClient.update(params, function(err, data) {});
+
         await new Promise(r => setTimeout(r, 500));
 
         document.getElementById("saveValues").innerText = "Save Values"
@@ -215,6 +246,11 @@ function updateData() {
         "showEvent" : docDataTemp['eventClassifier']['showEvent'].BOOL,
         "periodIntervalSeconds" : docDataTemp['gameScreen']['periodIntervalSeconds'].N,
         "periodMark" : docDataTemp['gameScreen']['periodMark'].S,
+        "eventTitle-1" : docDataTemp['startingSoon']['eventTitle1'].S,
+        "eventTitle-2" : docDataTemp['startingSoon']['eventTitle2'].S,
+        "nextEvent" : docDataTemp['startingSoon']['nextEvent'].S,
+        "targetTimeMs" : docDataTemp['startingSoon']['targetTimeMs'].S,
+        "themeSchool" : docDataTemp['startingSoon']['themeSchool'].S
     }
 
     for (var i = 0; i < Object.keys(docDataTemp['primaryColors']).length; i++) {
@@ -300,6 +336,26 @@ function updateData() {
     document.getElementById("eventNameIs").value = docData["eventName"];
     document.getElementById(docData["eventScene"]).selected = true;
     document.getElementById("showEvent").checked = docData["showEvent"];
+
+    //Starting Soon
+    document.getElementById("eventTitle").value = docData["eventTitle-1"];
+    document.getElementById("eventSubtitle").value = docData["eventTitle-2"];
+    document.getElementById("nextEvent").value = docData["nextEvent"];
+
+    var targetTimeMs = parseInt(docData["targetTimeMs"]);
+    var date = new Date(targetTimeMs);
+
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+
+    hours = (hours < 10 ? '0' : '') + hours;
+    minutes = (minutes < 10 ? '0' : '') + minutes;
+    seconds = (seconds < 10 ? '0' : '') + seconds;
+
+    var timeString = hours + ':' + minutes + ':' + seconds;
+    document.getElementById("startTime").value = timeString
+    document.getElementById("themeSchool").value = docData["themeSchool"];
 
     //Team Scores
     document.getElementById("side_1-name-scores").value = docData["team_1"];
