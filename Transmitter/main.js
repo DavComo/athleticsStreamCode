@@ -253,6 +253,8 @@ function updateData() {
         "themeSchool" : docDataTemp['startingSoon']['themeSchool'].S
     }
 
+    schools = [];
+
     for (var i = 0; i < Object.keys(docDataTemp['primaryColors']).length; i++) {
         var schoolCode = Object.keys(docDataTemp['primaryColors'])[i];
         var colorDiv = document.getElementById("colorDiv");

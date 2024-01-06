@@ -58,19 +58,29 @@ function init() {
     dynamoClient = new AWS.DynamoDB.DocumentClient();
 
     window.music = {
-        "totalTimeSeconds" : 0,
+        "totalTimeSeconds" : 1280,
         "order" : [
-            "ES_Hard to Move On - oomiee.mp3",
-            "ES_Forget You - NIGHTCAP.mp3",
-            "ES_Be Strong - NIGHTCAP.mp3",
-            "ES_Forever Again - Bonkers Beat Club.mp3",
-            "ES_Feel So Alive - NIGHTCAP.mp3",
-            "ES_Tin Distortion - Ooyy.mp3",
-            "ES_Venture - STRLGHT.mp3"
+            "HardToMoveOn",
+            "ForgetYou",
+            "BeStrong",
+            "ForeverAgain",
+            "FeelSoAlive",
+            "TinDistortion",
+            "Venture"
+        ],
+        "lengths" : [
+            182, //21:20
+            183, //18:18
+            200, //15:15
+            122, //11:55
+            189, //9:53
+            209, //6:44
+            195 //3:15
         ]
     };
 
-    indexMusic();
+    //indexMusic();
+    console.log(window.music['totalTimeSeconds']);
     fetchData();
 };
 
@@ -81,11 +91,17 @@ var colors = {};
 
 var currentScene;
 var currentStatus;
+var clockUpdating = false;
 //Update Data (Source js + refactoring)
 async function updateData() {
     for (var index = 0; index < docDataTempTemp.length; index++) {
         var indexkey = docDataTempTemp[index].valueId.S;
         docDataTemp[indexkey] = docDataTempTemp[index];
+    }
+
+    if (docDataTemp['startingSoon']['targetTimeMs'].S != docData['targetTimeMs']) {
+        window.songsPlaying = false;
+        document.getElementById(window.music['order'][currentSongIndex]).pause();
     }
 
     docData = {
@@ -124,7 +140,10 @@ async function updateData() {
     document.getElementById('countdown').style.webkitBackgroundClip = 'text';
     document.getElementById('countdown').style.webkitTextFillColor = 'transparent';
     
-    updateClocks();
+    if (!clockUpdating) {
+        clockUpdating = true;
+        updateClocks();
+    }
     await sleep(5000)
     fetchData()
 }
@@ -188,25 +207,63 @@ function rgbToHex(r, g, b) {
 }
 
 var currentSongIndex = 0;
+var songsPlaying = false;
 
-async function playSongs() {
-    var audio = new Audio('http://localhost:5500/Music/startingSoon/' + window.music['order'][currentSongIndex]);
-    audio.play();
-    currentSongIndex++;
-    if (currentSongIndex >= window.music['order'].length) {
-        currentSongIndex = 0;
+function playAudio(timeLeftSec) {
+    return new Promise(res=>{
+        var lengthTime = window.music['totalTimeSeconds'];
+        for (var i = 0; i < window.music['lengths'].length; i++) {
+            if (lengthTime <= timeLeftSec) {
+                currentSongIndex = i;
+                break;
+            } else {
+                lengthTime -= window.music['lengths'][i];
+            }
+        }
+        if (lengthTime < timeLeftSec) {
+            console.log("Song index: " + currentSongIndex + " | Time left: " + timeLeftSec + " | Length time: " + lengthTime);
+            window.songsPlaying = false;
+            return;
+        }
+        var audio = document.getElementById(window.music['order'][currentSongIndex])
+        if (!window.songsPlaying) {
+            window.songsPlaying = true;
+            console.log("Playing song: " + currentSongIndex);
+            audio.play()
+                .then(() => {
+                    console.log("Playing audio");
+                    window.songsPlaying = true;
+                })
+                .catch(error => {
+                    console.log("Error playing audio:", error);
+                    window.songsPlaying = false;
+                    res();
+                });
+
+            audio.onended = function() {
+                console.log("Song ended: " + currentSongIndex);
+                window.songsPlaying = false;
+                res()
+            }   
+        }
+    })
+}
+
+async function playSongs(timeLeftSec) {
+    if (window.songsPlaying || timeLeftSec == 0) {
+        return;
     }
-    await sleep(1000);
-    playSongs();
+    
+    await playAudio(timeLeftSec);
 }
 
 async function updateClocks() {
-    while (true) {
+    while (clockUpdating) {
         var targetTimeMs = docData['targetTimeMs'];
         var currentTimeMs = Date.now();
         var timeLeftMs = targetTimeMs - currentTimeMs;
 
-        if (timeLeftMs < 0) {
+        if (timeLeftMs <= 0) {
             document.getElementById('countdown').innerHTML = "0:00";
         } else {
             var timeLeftSec = Math.floor(timeLeftMs / 1000 % 60);
@@ -214,7 +271,10 @@ async function updateClocks() {
             document.getElementById('countdown').innerHTML = timeLeftMin + ':' + timeLeftSec.toString().padStart(2, '0');
 
             if ((timeLeftSec + timeLeftMin * 60) == Math.ceil(window.music['totalTimeSeconds'])) {
-                playSongs(music);
+                playSongs();
+                window.songsPlaying = true;
+            } else if ((timeLeftSec + timeLeftMin * 60) < Math.ceil(window.music['totalTimeSeconds']) && !window.songsPlaying) {
+                playSongs(timeLeftSec + timeLeftMin * 60);
             }
         }
 

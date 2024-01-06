@@ -350,7 +350,7 @@ def main():
 
     checkValidity()
     printInfo()
-    serverStartCommand = f"python3 -m http.server {serverPort} --bind 0.0.0.0"
+    serverStartCommand = f"python3 -m http.server {serverPort}"
     server = subprocess.Popen(serverStartCommand.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     serverRunning = True
     if jsonObj['accessKey'] == '' or jsonObj['secretKey'] == '':
