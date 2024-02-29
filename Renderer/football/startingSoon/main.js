@@ -271,10 +271,10 @@ async function updateClocks() {
             document.getElementById('countdown').innerHTML = timeLeftMin + ':' + timeLeftSec.toString().padStart(2, '0');
 
             if ((timeLeftSec + timeLeftMin * 60) == Math.ceil(window.music['totalTimeSeconds'])) {
-                playSongs();
+                //playSongs();
                 window.songsPlaying = true;
             } else if ((timeLeftSec + timeLeftMin * 60) < Math.ceil(window.music['totalTimeSeconds']) && !window.songsPlaying) {
-                playSongs(timeLeftSec + timeLeftMin * 60);
+                //playSongs(timeLeftSec + timeLeftMin * 60);
             }
         }
 
